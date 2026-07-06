@@ -1,0 +1,13 @@
+{
+  "name": "Luxe Health Massage",
+  "short_name": "Luxe Health",
+  "description": "Koh Samui's medical & wellness massage sanctuary in Bang Por.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf4ec",
+  "theme_color": "#8b2530",
+  "icons": [
+    { "src": "/favicon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

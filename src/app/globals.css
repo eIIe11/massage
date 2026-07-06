@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    background-color: #faf4ec;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  ::selection {
+    background: #8b2530;
+    color: #faf4ec;
+  }
+}
+
+@layer components {
+  .container-luxe {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.28em] text-luxe-700;
+  }
+  .heading {
+    @apply font-serif font-medium leading-[1.05] tracking-tight text-ink;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium tracking-wide transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-luxe-700/40;
+  }
+  .btn-primary {
+    @apply btn bg-luxe-700 text-cream shadow-luxe hover:bg-luxe-800 hover:-translate-y-0.5;
+  }
+  .btn-gold {
+    @apply btn bg-gradient-to-r from-gold-dark to-gold text-ink shadow-soft hover:brightness-105 hover:-translate-y-0.5;
+  }
+  .btn-outline {
+    @apply btn border border-luxe-700/30 bg-transparent text-luxe-800 hover:bg-luxe-700 hover:text-cream;
+  }
+  .card {
+    @apply rounded-3xl bg-white/70 ring-1 ring-black/5 backdrop-blur;
+  }
+}
+
+@layer utilities {
+  /* Film-grain / noise texture overlay */
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Decorative blurred glow orb */
+  .glow-orb {
+    @apply pointer-events-none absolute rounded-full blur-[100px];
+  }
+  .text-glow {
+    text-shadow: 0 2px 30px rgba(139, 37, 48, 0.25);
+  }
+}
+
+/* Thin custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f4ebdf;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9a97f;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8b2530;
+}
+
+/* Leaflet map tweaks */
+.leaflet-container {
+  font-family: var(--font-jost), sans-serif;
+  border-radius: 1.5rem;
+}
