@@ -17,7 +17,7 @@ const jost = Jost({
   display: "swap",
 });
 
-const siteUrl = "https://luxehealthmassage.netlify.app";
+const siteUrl = "https://luxehealthmassage.com";
 const description =
   "Luxe Health Massage — Koh Samui's premier medical & wellness massage studio in Bang Por. Lymphatic drainage, sports recovery, cellulite therapy, traditional Thai, aromatherapy & more. In-spa or in-home. Book via WhatsApp.";
 
