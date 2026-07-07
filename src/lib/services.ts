@@ -69,7 +69,7 @@ export const services: Service[] = [
     name: "Thai Physical Body Balance",
     category: "wellness",
     featured: true,
-    image: "/images/hero.jpg",
+    image: "/images/therapist-female.jpg",
     short: "A 3-hour full-body reset for deep balance.",
     description:
       "An immersive three-hour treatment that increases body awareness and connects you with the sensations within. Improves blood circulation, stimulates lymphatic flow and the digestive system, releases tension in the abdomen, eases emotional tension, and helps you relax and sleep better.",
@@ -81,7 +81,7 @@ export const services: Service[] = [
     name: "Full Body Toksen",
     category: "wellness",
     featured: true,
-    image: "/images/sports.jpg",
+    image: "/images/therapist-male.jpg",
     short: "Traditional wooden tapping to free stuck energy.",
     description:
       "An ancient northern-Thai therapy: gentle tapping with wooden instruments along the body's meridian lines sends healing vibrations deep into the tissue, awakening energy flow and restoring wellbeing — combined with Thai herbal balm.",
@@ -414,7 +414,7 @@ export const packages: Package[] = [
       "Foot massage & hot stone (1 hr)",
       "Faster muscle recovery",
     ],
-    image: "/images/sports.jpg",
+    image: "/images/therapist-female.jpg",
   },
   {
     id: "toksen-revival",
@@ -427,7 +427,7 @@ export const packages: Package[] = [
       "Facial Toksen + shoulder & head (1 hr)",
       "Free energy flow & a brighter face",
     ],
-    image: "/images/hero.jpg",
+    image: "/images/therapist-female.jpg",
   },
   {
     id: "couples-escape",

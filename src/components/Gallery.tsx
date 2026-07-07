@@ -2,10 +2,10 @@ import Image from "next/image";
 import Reveal from "./Reveal";
 
 const shots = [
-  { src: "/images/room.jpg", alt: "Treatment room", span: "sm:col-span-2 sm:row-span-2" },
+  { src: "/images/therapist-female.jpg", alt: "Relaxing back massage at Luxe Health Massage", span: "sm:col-span-2 sm:row-span-2" },
   { src: "/images/aroma.jpg", alt: "Aromatherapy oils", span: "" },
   { src: "/images/hotstone.jpg", alt: "Hot stone therapy", span: "" },
-  { src: "/images/reflexology.jpg", alt: "Foot reflexology", span: "" },
+  { src: "/images/therapist-male.jpg", alt: "Deep tissue back massage", span: "" },
   { src: "/images/lymphatic.jpg", alt: "Lymphatic drainage", span: "" },
 ];
 
