@@ -33,17 +33,12 @@ export default function Hero() {
       onMouseMove={onMove}
       className="relative min-h-[100svh] w-full overflow-hidden bg-luxe-950"
     >
-      {/* Ken-Burns image with parallax */}
+      {/* Ken-Burns image with parallax (scale animated via CSS on the compositor) */}
       <motion.div
         className="absolute inset-0"
-        style={{ x: imgX, y: imgY, scale: 1.12 }}
+        style={{ x: imgX, y: imgY }}
       >
-        <motion.div
-          className="absolute inset-0"
-          initial={{ scale: 1.08 }}
-          animate={{ scale: 1.18 }}
-          transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-        >
+        <div className="animate-kenburns absolute inset-0">
           <Image
             src="/images/hero.jpg"
             alt="Luxe Health Massage — serene wellness treatment in Koh Samui"
@@ -52,33 +47,21 @@ export default function Hero() {
             sizes="100vw"
             className="object-cover"
           />
-        </motion.div>
+        </div>
       </motion.div>
 
       {/* Tint gradients */}
       <div className="absolute inset-0 bg-gradient-to-r from-luxe-950/90 via-ink/55 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-luxe-950/85 via-transparent to-luxe-950/40" />
 
-      {/* Animated colour glows */}
+      {/* Colour glows (static — large blurs are costly to repaint, so we don't animate them) */}
       <motion.div
         style={{ x: glowX, y: glowY }}
         className="pointer-events-none absolute inset-0"
       >
-        <motion.div
-          className="absolute -left-24 top-1/4 h-[32rem] w-[32rem] rounded-full bg-luxe-600/30 blur-[120px]"
-          animate={{ opacity: [0.35, 0.6, 0.35] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute -right-16 top-1/3 h-[28rem] w-[28rem] rounded-full bg-gold/20 blur-[120px]"
-          animate={{ opacity: [0.25, 0.5, 0.25] }}
-          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-0 left-1/3 h-[24rem] w-[24rem] rounded-full bg-luxe-800/40 blur-[110px]"
-          animate={{ opacity: [0.3, 0.55, 0.3] }}
-          transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <div className="absolute -left-24 top-1/4 h-[32rem] w-[32rem] rounded-full bg-luxe-600/30 blur-[120px] opacity-50" />
+        <div className="absolute -right-16 top-1/3 h-[28rem] w-[28rem] rounded-full bg-gold/20 blur-[120px] opacity-40" />
+        <div className="absolute bottom-0 left-1/3 h-[24rem] w-[24rem] rounded-full bg-luxe-800/40 blur-[110px] opacity-45" />
       </motion.div>
 
       {/* Floating gold particles */}

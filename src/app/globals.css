@@ -62,6 +62,77 @@
   .text-glow {
     text-shadow: 0 2px 30px rgba(139, 37, 48, 0.25);
   }
+  /* GPU-friendly hero motion (runs on the compositor, not JS per-frame) */
+  .animate-kenburns {
+    animation: kenburns 26s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  .particle {
+    position: absolute;
+    bottom: -12px;
+    border-radius: 9999px;
+    background: #e4cd97;
+    filter: blur(0.5px);
+    box-shadow: 0 0 8px rgba(228, 205, 151, 0.6);
+    opacity: 0;
+    animation-name: floatUp;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: transform, opacity;
+  }
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1.16);
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--p-op, 0.4);
+  }
+  85% {
+    opacity: var(--p-op, 0.4);
+  }
+  100% {
+    transform: translate3d(var(--p-drift, 0px), -520px, 0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-kenburns,
+  .particle {
+    animation: none !important;
+  }
+  .particle {
+    opacity: 0;
+  }
+}
+
+/* Google Translate — hide its injected banner/gadget, keep our custom dropdown */
+.goog-te-banner-frame,
+.goog-te-gadget-icon,
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+.goog-te-gadget {
+  font-size: 0 !important;
+}
+body {
+  top: 0 !important;
+}
+.skiptranslate iframe {
+  display: none !important;
 }
 
 /* Thin custom scrollbar */

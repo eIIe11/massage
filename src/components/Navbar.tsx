@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { useBooking } from "./booking/BookingProvider";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const links = [
   { href: "#treatments", label: "Treatments" },
@@ -60,6 +61,9 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="hidden sm:block">
+            <LanguageSwitcher dark={scrolled} />
+          </div>
           <button
             onClick={() => openBooking()}
             className="btn-primary hidden px-6 py-3 sm:inline-flex"
@@ -82,6 +86,9 @@ export default function Navbar() {
       {open && (
         <div className="border-t border-black/5 bg-cream/95 backdrop-blur-md lg:hidden">
           <div className="container-luxe flex flex-col gap-1 py-4">
+            <div className="px-3 pb-2">
+              <LanguageSwitcher dark />
+            </div>
             {links.map((l) => (
               <a
                 key={l.href}
