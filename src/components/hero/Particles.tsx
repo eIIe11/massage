@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 
 // Drifting gold "spa-steam" motes that float gently upward.
-export default function Particles({ count = 26 }: { count?: number }) {
+export default function Particles({ count = 16 }: { count?: number }) {
   const dots = useMemo(
     () =>
       Array.from({ length: count }).map((_, i) => ({

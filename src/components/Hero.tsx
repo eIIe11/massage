@@ -66,12 +66,12 @@ export default function Hero() {
       >
         <motion.div
           className="absolute -left-24 top-1/4 h-[32rem] w-[32rem] rounded-full bg-luxe-600/30 blur-[120px]"
-          animate={{ opacity: [0.35, 0.6, 0.35], scale: [1, 1.15, 1] }}
+          animate={{ opacity: [0.35, 0.6, 0.35] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute -right-16 top-1/3 h-[28rem] w-[28rem] rounded-full bg-gold/20 blur-[120px]"
-          animate={{ opacity: [0.25, 0.5, 0.25], scale: [1.1, 1, 1.1] }}
+          animate={{ opacity: [0.25, 0.5, 0.25] }}
           transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
