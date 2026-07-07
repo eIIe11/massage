@@ -1,12 +1,12 @@
 const items = [
-  "Manual Lymphatic Drainage",
-  "Sports Recovery",
-  "Cellulite & Slimming",
-  "Deep Tissue Therapy",
+  "Lymphatic Drainage",
+  "Toksen Therapy",
+  "Thai Body Balance",
+  "Deep Oil & Balm",
   "Traditional Thai",
-  "Aromatherapy",
+  "Herbal Hot Compress",
   "Hot Stone",
-  "Prenatal Care",
+  "Facial Care",
   "In-Home Service",
 ];
 

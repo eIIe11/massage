@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
-// Treatment menu & packages.
-// Prices are in Thai Baht (฿) and are indicative, competitive Koh Samui rates —
-// review with the owner before go-live. Everything is editable in this file.
+// Treatment menu & packages — from Luxe Health Massage's own printed menu.
+// Prices are in Thai Baht (฿). Everything is editable in this file.
+// Durations: 60 = 1 hr, 90 = 1.30 hr, 120 = 2 hr, 180 = 3 hr.
 // ---------------------------------------------------------------------------
 
 export type Category = "wellness" | "classic" | "body" | "beauty";
@@ -20,260 +20,358 @@ export interface Service {
   options: Option[]; // duration / price tiers
   benefits?: string[];
   image?: string;
-  featured?: boolean; // signature medical/wellness treatment
+  featured?: boolean; // signature treatment
 }
 
 export const categories: { id: Category; label: string; blurb: string }[] = [
   {
     id: "wellness",
-    label: "Medical & Wellness",
-    blurb: "Therapeutic treatments for recovery, circulation and healing.",
+    label: "Signature & Wellness",
+    blurb:
+      "Therapeutic specialities — lymphatic drainage, Toksen and full-body balancing.",
   },
   {
     id: "classic",
-    label: "Classic & Relaxation",
-    blurb: "Timeless massage traditions to unwind and restore.",
+    label: "Massage & Bodywork",
+    blurb: "Oil, Thai and herbal massage in relaxing 1 & 1.5-hour rituals.",
   },
   {
     id: "body",
-    label: "Body & Detox",
-    blurb: "Scrubs, wraps and rituals that renew from head to toe.",
+    label: "Foot, Back & Body",
+    blurb: "Focused foot, back and skin treatments to target what needs care.",
   },
   {
     id: "beauty",
-    label: "Beauty & Face",
-    blurb: "Radiance-boosting facial and beauty care.",
+    label: "Facial Care",
+    blurb: "Nourishing facials finished with a shoulder & head massage.",
   },
 ];
 
 export const services: Service[] = [
-  // ---- Medical & Wellness (signature) ----
+  // ---- Signature & Wellness ----
   {
     id: "lymphatic-drainage",
-    name: "Manual Lymphatic Drainage",
+    name: "Lymphatic Drainage Massage",
     category: "wellness",
     featured: true,
     image: "/images/lymphatic.jpg",
-    short: "Gentle, rhythmic detox to reduce fluid & swelling.",
+    short: "Light, rhythmic detox to reduce fluid & swelling.",
     description:
-      "A specialised, feather-light technique that stimulates the lymphatic system to flush toxins, reduce water retention and swelling, and support the immune system. A signature of Luxe Health Massage.",
-    benefits: ["Reduces swelling & bloating", "Boosts immunity", "Post-op & post-flight recovery"],
+      "A gentle, specialised technique that stimulates the lymphatic system to reduce swelling and water retention, and helps the immune system work more effectively. A signature of Luxe Health Massage.",
+    benefits: ["Reduces swelling", "Boosts immunity", "Light & soothing"],
     options: [
-      { minutes: 60, price: 900 },
-      { minutes: 90, price: 1300 },
+      { minutes: 60, price: 600 },
+      { minutes: 90, price: 900 },
     ],
   },
   {
-    id: "cellulite",
-    name: "Cellulite & Slimming Massage",
+    id: "body-balance",
+    name: "Thai Physical Body Balance",
+    category: "wellness",
+    featured: true,
+    image: "/images/hero.jpg",
+    short: "A 3-hour full-body reset for deep balance.",
+    description:
+      "An immersive three-hour treatment that increases body awareness and connects you with the sensations within. Improves blood circulation, stimulates lymphatic flow and the digestive system, releases tension in the abdomen, eases emotional tension, and helps you relax and sleep better.",
+    benefits: ["Whole-body reset", "Improves circulation", "Deep relaxation"],
+    options: [{ minutes: 180, price: 2400 }],
+  },
+  {
+    id: "toksen-full",
+    name: "Full Body Toksen",
     category: "wellness",
     featured: true,
     image: "/images/sports.jpg",
-    short: "Deep contouring strokes to smooth & firm skin.",
+    short: "Traditional wooden tapping to free stuck energy.",
     description:
-      "Targeted deep-tissue and vacuum-style techniques that break down stubborn cellulite, stimulate circulation and help tone and contour the body over a course of sessions.",
-    benefits: ["Smooths cellulite", "Firms & contours", "Improves circulation"],
-    options: [
-      { minutes: 60, price: 900 },
-      { minutes: 90, price: 1300 },
-    ],
+      "An ancient northern-Thai therapy: gentle tapping with wooden instruments along the body's meridian lines sends healing vibrations deep into the tissue, awakening energy flow and restoring wellbeing — combined with Thai herbal balm.",
+    benefits: ["Releases deep tension", "Restores energy flow", "Meditative"],
+    options: [{ minutes: 120, price: 1600 }],
   },
   {
-    id: "sports-recovery",
-    name: "Sports Recovery Massage",
+    id: "toksen-back",
+    name: "Back, Neck & Shoulder Toksen",
     category: "wellness",
-    featured: true,
-    image: "/images/sports.jpg",
-    short: "Restore tired muscles & speed up recovery.",
+    short: "Targeted Toksen for the areas that hold stress.",
     description:
-      "A performance-focused blend of deep tissue, stretching and trigger-point work designed for athletes and active bodies — relieving tension, preventing injury and accelerating recovery.",
-    benefits: ["Faster muscle recovery", "Injury prevention", "Improved mobility"],
-    options: [
-      { minutes: 60, price: 800 },
-      { minutes: 90, price: 1100 },
-    ],
+      "Focused Toksen tapping across the back, neck and shoulders to release tight, stubborn tension at the source — finished with warming Thai herbal balm.",
+    benefits: ["Relieves stiff shoulders", "Frees tension", "Energising"],
+    options: [{ minutes: 60, price: 800 }],
   },
   {
-    id: "deep-tissue",
-    name: "Deep Tissue Therapy",
+    id: "face-lymphatic",
+    name: "Facial Lymphatic Drainage",
     category: "wellness",
-    featured: true,
-    image: "/images/sports.jpg",
-    short: "Firm pressure to release chronic tension.",
+    short: "Gentle facial drainage with coconut oil + shoulder & head.",
     description:
-      "Slow, firm strokes that reach the deeper layers of muscle and fascia to release chronic knots, ease stubborn back and shoulder pain, and restore freedom of movement.",
-    benefits: ["Releases deep knots", "Relieves chronic pain", "Restores mobility"],
-    options: [
-      { minutes: 60, price: 700 },
-      { minutes: 90, price: 1000 },
-    ],
+      "A delicate facial lymphatic drainage with coconut oil that helps reduce puffiness and brighten the complexion, finished with a soothing shoulder and head massage.",
+    benefits: ["De-puffs the face", "Brightens skin", "Deeply calming"],
+    options: [{ minutes: 60, price: 600 }],
   },
   {
-    id: "trigger-point",
-    name: "Trigger Point & Myofascial Release",
+    id: "after-sport",
+    name: "After-Sport Oil & Balm",
     category: "wellness",
-    short: "Precise release for knots & referred pain.",
+    short: "Medium-pressure recovery for active bodies.",
     description:
-      "Focused pressure on specific trigger points combined with myofascial release to unwind tight bands of tissue and relieve pain patterns at the source.",
-    benefits: ["Targets pain at source", "Frees fascia", "Reduces tension headaches"],
-    options: [{ minutes: 60, price: 850 }],
-  },
-  {
-    id: "prenatal",
-    name: "Prenatal (Pregnancy) Massage",
-    category: "wellness",
-    short: "Safe, nurturing relief for expectant mothers.",
-    description:
-      "A gentle, carefully positioned treatment that eases back ache, swollen legs and tension during pregnancy (suitable from the second trimester), leaving mums-to-be relaxed and supported.",
-    benefits: ["Eases back & hip ache", "Reduces swelling", "Deep relaxation"],
-    options: [{ minutes: 60, price: 700 }],
+      "A medium-pressure oil and balm massage designed for after exercise — easing worked muscles, relieving tension and supporting faster recovery.",
+    benefits: ["Muscle recovery", "Relieves tension", "Medium pressure"],
+    options: [{ minutes: 60, price: 600 }],
   },
 
-  // ---- Classic & Relaxation ----
+  // ---- Massage & Bodywork ----
+  {
+    id: "oil-relax",
+    name: "Oil Massage (Relax)",
+    category: "classic",
+    image: "/images/aroma.jpg",
+    short: "Flowing oil massage to melt away stress.",
+    description:
+      "Smooth, flowing strokes with your choice of oil to calm the mind, ease everyday tension and leave the skin nourished. Pure relaxation.",
+    benefits: ["Deep relaxation", "Nourishes skin", "Calms the mind"],
+    options: [
+      { minutes: 60, price: 400 },
+      { minutes: 90, price: 600 },
+    ],
+  },
+  {
+    id: "premium-oil",
+    name: "Premium Oil Massage",
+    category: "classic",
+    short: "Choose your pressure — relax, medium or strong.",
+    description:
+      "An elevated oil massage tailored to your preferred pressure — from gentle relaxation through to firm, deep work — with your choice of oil.",
+    benefits: ["Tailored pressure", "Relieves tension", "Choose your oil"],
+    options: [
+      { minutes: 60, price: 500 },
+      { minutes: 90, price: 750 },
+    ],
+  },
+  {
+    id: "deep-oil-balm",
+    name: "Deep Oil & Balm",
+    category: "classic",
+    short: "Firm, deep work with warming balm.",
+    description:
+      "A medium-to-strong treatment combining oil and warming herbal balm to reach deeper layers of muscle, release chronic knots and restore freedom of movement.",
+    benefits: ["Releases deep knots", "Warming balm", "Medium–strong"],
+    options: [
+      { minutes: 60, price: 550 },
+      { minutes: 90, price: 800 },
+    ],
+  },
+  {
+    id: "warm-oil",
+    name: "Warm Oil Massage",
+    category: "classic",
+    short: "Warmed oil for deeper muscle release.",
+    description:
+      "Warmed oil combined with medium-to-strong pressure to soothe the muscles, improve circulation and melt away deep tension.",
+    benefits: ["Warming & soothing", "Improves circulation", "Medium–strong"],
+    options: [
+      { minutes: 60, price: 550 },
+      { minutes: 90, price: 800 },
+    ],
+  },
   {
     id: "thai",
     name: "Traditional Thai Massage",
     category: "classic",
-    image: "/images/hero.jpg",
     short: "Ancient stretch-and-press for full-body energy.",
     description:
-      "The time-honoured Thai art of rhythmic pressure and assisted yoga-like stretching that opens energy lines, improves flexibility and leaves you light and revitalised.",
+      "The time-honoured Thai art of rhythmic pressure and assisted stretching that opens energy lines, improves flexibility and leaves you light and revitalised. Medium to strong.",
     benefits: ["Improves flexibility", "Relieves stiffness", "Energising"],
     options: [
-      { minutes: 60, price: 450 },
-      { minutes: 90, price: 650 },
-      { minutes: 120, price: 850 },
+      { minutes: 60, price: 400 },
+      { minutes: 90, price: 600 },
     ],
   },
   {
-    id: "aromatherapy",
-    name: "Aromatherapy Oil Massage",
+    id: "thai-oil",
+    name: "Thai & Oil Massage",
     category: "classic",
-    image: "/images/aroma.jpg",
-    short: "Flowing oil massage with essential oils.",
+    short: "Thai technique with the glide of oil.",
     description:
-      "Smooth, flowing strokes with your choice of aromatic essential oils to melt away stress, calm the mind and nourish the skin. Pure indulgence.",
-    benefits: ["Deep relaxation", "Nourishes skin", "Calms the mind"],
+      "The best of both worlds — traditional Thai pressure and stretching blended with your choice of oil for a smoother, deeply relaxing treatment.",
+    benefits: ["Flexibility + relaxation", "Choose your oil", "Medium–strong"],
     options: [
-      { minutes: 60, price: 600 },
-      { minutes: 90, price: 850 },
-    ],
-  },
-  {
-    id: "swedish",
-    name: "Swedish Relaxation Massage",
-    category: "classic",
-    short: "Classic gliding strokes to soothe & unwind.",
-    description:
-      "A gentle-to-medium Western-style massage using long gliding strokes and kneading to ease tension, improve circulation and promote total relaxation.",
-    benefits: ["Eases tension", "Improves circulation", "Total calm"],
-    options: [
-      { minutes: 60, price: 600 },
-      { minutes: 90, price: 850 },
-    ],
-  },
-  {
-    id: "reflexology",
-    name: "Foot Reflexology",
-    category: "classic",
-    image: "/images/reflexology.jpg",
-    short: "Pressure-point foot therapy for whole-body balance.",
-    description:
-      "Expert pressure applied to reflex points on the feet that correspond to organs and systems throughout the body — deeply relaxing and wonderfully restorative.",
-    benefits: ["Relieves tired feet", "Whole-body balance", "Better sleep"],
-    options: [
-      { minutes: 45, price: 400 },
       { minutes: 60, price: 500 },
+      { minutes: 90, price: 750 },
     ],
   },
   {
-    id: "back-neck-shoulder",
-    name: "Back, Neck & Shoulder",
+    id: "thai-balm",
+    name: "Thai & Herbal Balm",
     category: "classic",
-    short: "Targeted relief for desk & travel tension.",
+    short: "Thai massage with warming herbal balm.",
     description:
-      "A focused treatment on the areas that hold the most stress — perfect for office tension, travel stiffness or a quick reset.",
-    benefits: ["Relieves stiffness", "Great for desk workers", "Quick reset"],
+      "Traditional Thai massage finished with warming Thai herbal balm to soothe tired muscles and enhance circulation.",
+    benefits: ["Warming balm", "Relieves aches", "Medium–strong"],
     options: [
-      { minutes: 30, price: 350 },
-      { minutes: 60, price: 550 },
+      { minutes: 60, price: 500 },
+      { minutes: 90, price: 750 },
     ],
   },
   {
-    id: "four-hands",
-    name: "Four Hands Massage",
+    id: "thai-aloe",
+    name: "Thai & Aloe Vera",
     category: "classic",
-    short: "Two therapists, twice the bliss.",
+    short: "Cooling aloe vera with Thai technique.",
     description:
-      "Two skilled therapists work in perfect synchrony for an immersive, deeply relaxing experience that quiets the mind and doubles the indulgence.",
-    benefits: ["Ultimate indulgence", "Deep relaxation", "Synchronised bliss"],
-    options: [{ minutes: 60, price: 1200 }],
-  },
-
-  // ---- Body & Detox ----
-  {
-    id: "hot-stone",
-    name: "Hot Stone Therapy",
-    category: "body",
-    image: "/images/hotstone.jpg",
-    short: "Warm basalt stones melt deep tension.",
-    description:
-      "Smooth heated volcanic stones glide over the body to radiate soothing warmth deep into the muscles, easing tension and promoting profound relaxation.",
-    benefits: ["Melts deep tension", "Soothing warmth", "Improves circulation"],
-    options: [{ minutes: 90, price: 1200 }],
+      "Traditional Thai massage combined with cooling aloe vera gel — wonderfully soothing for the skin, especially after sun.",
+    benefits: ["Cooling & soothing", "Great after sun", "Medium–strong"],
+    options: [
+      { minutes: 60, price: 600 },
+      { minutes: 90, price: 900 },
+    ],
   },
   {
-    id: "herbal-compress",
-    name: "Thai Herbal Compress",
-    category: "body",
+    id: "thai-herbal-compress",
+    name: "Thai Massage & Herbal Hot Compress",
+    category: "classic",
     image: "/images/aroma.jpg",
-    short: "Steamed herbal poultice to soothe muscles.",
+    short: "Steamed herbal poultice to soothe key areas.",
     description:
-      "Warm poultices packed with traditional Thai herbs are pressed along the body, releasing aromatic steam that relieves aches, reduces inflammation and calms the senses.",
-    benefits: ["Relieves aches", "Reduces inflammation", "Aromatic & calming"],
-    options: [{ minutes: 90, price: 1000 }],
+      "Traditional Thai herbal therapy: warm poultices packed with Thai herbs are pressed along key areas after a pressure-point massage to soothe muscle tension and stiffness.",
+    benefits: ["Relieves aches", "Aromatic & warming", "Reduces stiffness"],
+    options: [{ minutes: 60, price: 750 }],
   },
   {
-    id: "body-scrub",
-    name: "Body Scrub & Exfoliation",
-    category: "body",
-    short: "Reveal soft, glowing skin.",
+    id: "oil-herbal-compress",
+    name: "Pure Oil & Herbal Hot Compress",
+    category: "classic",
+    short: "Flowing oil massage with a warm herbal compress.",
     description:
-      "A gentle exfoliating scrub that sloughs away dull, dry skin to reveal a smooth, radiant glow — finished with a light moisturising ritual.",
-    benefits: ["Softer skin", "Radiant glow", "Detoxifying"],
-    options: [{ minutes: 45, price: 700 }],
-  },
-  {
-    id: "body-wrap",
-    name: "Herbal Body Wrap",
-    category: "body",
-    short: "Nourishing wrap to detox & hydrate.",
-    description:
-      "A cocooning wrap of nourishing botanicals that detoxifies, hydrates and firms the skin while you drift into deep relaxation.",
-    benefits: ["Detoxifies", "Deeply hydrates", "Firms skin"],
-    options: [{ minutes: 60, price: 900 }],
-  },
-
-  // ---- Beauty & Face ----
-  {
-    id: "facial",
-    name: "Radiance Facial",
-    category: "beauty",
-    short: "Cleanse, nourish & glow.",
-    description:
-      "A tailored facial that cleanses, exfoliates and nourishes the skin with a relaxing face, neck and shoulder massage for a fresh, luminous complexion.",
-    benefits: ["Brightens complexion", "Deeply cleanses", "Relaxing"],
+      "A flowing oil massage combined with a warm Thai herbal compress to relieve tension, ease aches and calm the senses.",
+    benefits: ["Deeply soothing", "Aromatic herbs", "Relieves aches"],
     options: [{ minutes: 60, price: 800 }],
   },
   {
-    id: "head-scalp",
-    name: "Head & Scalp Ritual",
-    category: "beauty",
-    short: "Tension-melting scalp & head massage.",
+    id: "hot-stone",
+    name: "Hot Stone Massage",
+    category: "classic",
+    featured: true,
+    image: "/images/hotstone.jpg",
+    short: "Warm stones melt deep tension & detoxify.",
     description:
-      "A blissful head, scalp and face massage that relieves tension, eases headaches and leaves you serene and clear-headed.",
-    benefits: ["Relieves headaches", "Melts tension", "Clarity & calm"],
-    options: [{ minutes: 30, price: 350 }],
+      "Smooth heated stones glide over the body with your choice of oil, radiating soothing warmth deep into the muscles to detoxify the body, ease tension and promote profound relaxation.",
+    benefits: ["Melts deep tension", "Detoxifying", "Soothing warmth"],
+    options: [{ minutes: 60, price: 800 }],
+  },
+
+  // ---- Foot, Back & Body ----
+  {
+    id: "foot-oil-balm",
+    name: "Foot Massage (Oil & Balm)",
+    category: "body",
+    image: "/images/reflexology.jpg",
+    short: "Classic foot massage with oil & balm.",
+    description:
+      "A relaxing foot massage with oil and warming balm — the perfect way to revive tired feet and relax the whole body.",
+    benefits: ["Revives tired feet", "Relaxing", "Improves circulation"],
+    options: [{ minutes: 60, price: 400 }],
+  },
+  {
+    id: "foot-hot-stone",
+    name: "Foot Massage & Hot Stone",
+    category: "body",
+    short: "Warm stones and oil for tired feet.",
+    description:
+      "A foot massage using oil and warm stones to soothe aching feet and radiate relaxing warmth through the lower legs.",
+    benefits: ["Soothing warmth", "Revives feet", "Relaxing"],
+    options: [{ minutes: 60, price: 500 }],
+  },
+  {
+    id: "foot-scrub",
+    name: "Foot Scrub, Oil & Balm",
+    category: "body",
+    short: "Exfoliate, then massage with oil & balm.",
+    description:
+      "A gentle foot scrub to buff away rough, dry skin, followed by a relaxing oil-and-balm foot massage for soft, refreshed feet.",
+    benefits: ["Softer feet", "Exfoliating", "Relaxing"],
+    options: [{ minutes: 60, price: 550 }],
+  },
+  {
+    id: "leg-arm-head",
+    name: "Leg, Arm & Head Massage",
+    category: "body",
+    short: "Focused relief for legs, arms & head.",
+    description:
+      "A focused massage of the legs, arms and head with your choice of oil — ideal for reviving tired limbs and clearing the mind.",
+    benefits: ["Revives limbs", "Clears the mind", "Choose your oil"],
+    options: [{ minutes: 60, price: 500 }],
+  },
+  {
+    id: "back-shoulder-head",
+    name: "Back, Shoulder & Head",
+    category: "body",
+    short: "Targeted relief for desk & travel tension.",
+    description:
+      "A focused treatment on the back, shoulders and head with oil and balm — perfect for office tension, travel stiffness or a quick reset.",
+    benefits: ["Relieves stiffness", "Great for desk workers", "Quick reset"],
+    options: [{ minutes: 60, price: 500 }],
+  },
+  {
+    id: "back-foot",
+    name: "Back & Foot Massage",
+    category: "body",
+    short: "Back and feet, oil & balm.",
+    description:
+      "A combination treatment focusing on the back and the feet with oil and warming balm — relief where you need it most.",
+    benefits: ["Relieves back tension", "Revives feet", "Balancing"],
+    options: [{ minutes: 60, price: 500 }],
+  },
+  {
+    id: "body-scrub",
+    name: "Body Scrub",
+    category: "body",
+    short: "Gentle exfoliation for soft, glowing skin.",
+    description:
+      "A gentle deep-cleansing treatment that exfoliates dull skin and leaves the entire body soft, smooth and radiant.",
+    benefits: ["Softer skin", "Radiant glow", "Deep cleanse"],
+    options: [{ minutes: 60, price: 800 }],
+  },
+  {
+    id: "aloe-after-sun",
+    name: "Aloe Vera Gel (After Sun)",
+    category: "body",
+    short: "Cooling aloe relief for sun-kissed skin.",
+    description:
+      "A cooling, soothing aloe vera treatment to calm and rehydrate skin after a day in the sun.",
+    benefits: ["Cools sunburn", "Rehydrates", "Soothing"],
+    options: [{ minutes: 60, price: 600 }],
+  },
+
+  // ---- Facial Care ----
+  {
+    id: "coconut-facial",
+    name: "Coconut Oil Facial + Shoulder & Head",
+    category: "beauty",
+    short: "Nourishing coconut facial with shoulder & head massage.",
+    description:
+      "A nourishing facial massage with pure coconut oil to hydrate and soften the skin, finished with a relaxing shoulder and head massage.",
+    benefits: ["Hydrates skin", "Relaxing", "Natural coconut oil"],
+    options: [{ minutes: 60, price: 600 }],
+  },
+  {
+    id: "aloe-facial",
+    name: "Aloe Vera Gel Facial + Shoulder & Head",
+    category: "beauty",
+    short: "Cooling aloe facial with shoulder & head massage.",
+    description:
+      "A calming facial with cooling aloe vera gel to soothe and refresh the complexion, finished with a relaxing shoulder and head massage.",
+    benefits: ["Soothes & cools", "Refreshes skin", "Relaxing"],
+    options: [{ minutes: 60, price: 600 }],
+  },
+  {
+    id: "facial-toksen",
+    name: "Facial Toksen + Shoulder & Head",
+    category: "beauty",
+    short: "Gentle facial tapping to brighten & lift.",
+    description:
+      "Delicate Toksen tapping on the face stimulates circulation for a brighter complexion, helps soften the look of fine lines and adds oxygen to the skin — finished with a shoulder and head massage.",
+    benefits: ["Brightens complexion", "Softens fine lines", "Relieves tension"],
+    options: [{ minutes: 60, price: 800 }],
   },
 ];
 
@@ -288,85 +386,61 @@ export interface Package {
   best?: boolean;
 }
 
+// Curated bundles built from the treatments above, at a small saving.
+// Fully editable — adjust names, contents and prices with the owner.
 export const packages: Package[] = [
   {
-    id: "signature-ritual",
-    name: "The Luxe Signature Ritual",
-    duration: "2h 30m",
-    price: 2500,
-    tagline: "Our most-loved head-to-toe indulgence.",
+    id: "detox-glow",
+    name: "Detox & Glow Ritual",
+    duration: "2h",
+    price: 1300,
+    tagline: "Exfoliate, then flush and de-puff head to toe.",
     includes: [
-      "Body scrub & exfoliation",
-      "90-min aromatherapy oil massage",
-      "Radiance facial",
+      "Body scrub (1 hr)",
+      "Lymphatic drainage massage (1 hr)",
+      "Soft, glowing, refreshed skin",
     ],
-    image: "/images/room.jpg",
+    image: "/images/lymphatic.jpg",
     best: true,
   },
   {
-    id: "recovery-renewal",
-    name: "Recovery & Renewal",
+    id: "after-sport-recovery",
+    name: "After-Sport Recovery",
     duration: "2h",
-    price: 1900,
+    price: 1000,
     tagline: "For active bodies that need to bounce back.",
     includes: [
-      "Sports recovery massage",
-      "Deep tissue therapy",
-      "Thai herbal compress",
+      "After-sport oil & balm (1 hr)",
+      "Foot massage & hot stone (1 hr)",
+      "Faster muscle recovery",
     ],
     image: "/images/sports.jpg",
   },
   {
-    id: "lymphatic-detox",
-    name: "Lymphatic Detox Program",
-    duration: "3 × 60m",
-    price: 2400,
-    tagline: "A course of three drainage sessions to reset.",
+    id: "toksen-revival",
+    name: "Toksen Revival",
+    duration: "2h",
+    price: 1500,
+    tagline: "Ancient wooden-tapping therapy, body & face.",
     includes: [
-      "3 × manual lymphatic drainage",
-      "Personalised wellness guidance",
-      "Best value per session",
+      "Back, neck & shoulder Toksen (1 hr)",
+      "Facial Toksen + shoulder & head (1 hr)",
+      "Free energy flow & a brighter face",
     ],
-    image: "/images/lymphatic.jpg",
+    image: "/images/hero.jpg",
   },
   {
-    id: "couples-retreat",
-    name: "Couples Retreat",
-    duration: "1h 30m · for two",
-    price: 2800,
+    id: "couples-escape",
+    name: "Couples Escape",
+    duration: "1h · for two",
+    price: 950,
     tagline: "Side-by-side serenity for two.",
     includes: [
-      "90-min aromatherapy massage each",
-      "Foot ritual & refreshments",
-      "Private couples setting",
+      "Premium oil massage each (1 hr)",
+      "Choose your oil & pressure",
+      "Relax together, side by side",
     ],
     image: "/images/aroma.jpg",
-  },
-  {
-    id: "half-day-journey",
-    name: "Half-Day Spa Journey",
-    duration: "3h",
-    price: 3500,
-    tagline: "The ultimate escape — a full afternoon of care.",
-    includes: [
-      "Body scrub & herbal wrap",
-      "Aromatherapy or hot stone massage",
-      "Radiance facial & foot reflexology",
-    ],
-    image: "/images/hotstone.jpg",
-  },
-  {
-    id: "wellness-membership",
-    name: "Monthly Wellness Membership",
-    duration: "4 × 60m / month",
-    price: 2800,
-    tagline: "Make wellbeing a habit — and save.",
-    includes: [
-      "4 × 60-min massage of choice each month",
-      "Priority booking",
-      "Member-only rates",
-    ],
-    image: "/images/room.jpg",
   },
 ];
 

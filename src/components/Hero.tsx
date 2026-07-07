@@ -122,8 +122,8 @@ export default function Hero() {
 
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-cream/85">
             A medical &amp; wellness massage sanctuary led by Khun Roong —
-            lymphatic drainage, sports recovery, cellulite therapy and timeless
-            Thai rituals. In our studio, or in the comfort of your home.
+            lymphatic drainage, Toksen, herbal compress and timeless Thai
+            rituals. In our studio, or in the comfort of your home.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
