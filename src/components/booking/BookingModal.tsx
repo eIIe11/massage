@@ -25,6 +25,13 @@ import {
   zoneInfo,
 } from "@/lib/booking";
 import { whatsappLink } from "@/lib/config";
+import {
+  bookingEnabled,
+  getTakenSlots,
+  availableStartTimes,
+  createBooking,
+  HOUR_SLOTS,
+} from "@/lib/supabase";
 
 const MapPicker = dynamic(() => import("./MapPicker"), {
   ssr: false,
@@ -34,20 +41,6 @@ const MapPicker = dynamic(() => import("./MapPicker"), {
     </div>
   ),
 });
-
-const timeSlots = [
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-  "19:00",
-  "20:00",
-];
 
 export default function BookingModal({
   initialServiceId,
@@ -76,6 +69,8 @@ export default function BookingModal({
   const [time, setTime] = useState("");
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
+  const [takenSlots, setTakenSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   // Keep a valid duration when the service changes.
   useEffect(() => {
@@ -83,6 +78,35 @@ export default function BookingModal({
       setMinutes(service.options[0].minutes);
     }
   }, [service, minutes]);
+
+  // Fetch which slots are already taken for the chosen date.
+  useEffect(() => {
+    if (!bookingEnabled || !date) {
+      setTakenSlots([]);
+      return;
+    }
+    let active = true;
+    setLoadingSlots(true);
+    getTakenSlots(date).then((slots) => {
+      if (active) {
+        setTakenSlots(slots);
+        setLoadingSlots(false);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [date]);
+
+  const availableTimes = useMemo(
+    () => (bookingEnabled ? availableStartTimes(takenSlots, minutes) : HOUR_SLOTS),
+    [takenSlots, minutes]
+  );
+
+  // Drop a chosen time if it becomes unavailable (duration/date change).
+  useEffect(() => {
+    if (time && !availableTimes.includes(time)) setTime("");
+  }, [availableTimes, time]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -131,6 +155,22 @@ export default function BookingModal({
   };
 
   const today = new Date().toISOString().split("T")[0];
+
+  const [recorded, setRecorded] = useState(false);
+  const recordBooking = () => {
+    if (!bookingEnabled || recorded || !date || !time) return;
+    setRecorded(true);
+    createBooking({
+      serviceName: service.name,
+      minutes,
+      mode,
+      people,
+      date,
+      time,
+      name,
+      notes,
+    });
+  };
 
   return (
     <AnimatePresence>
@@ -338,15 +378,29 @@ export default function BookingModal({
                 <select
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
+                  disabled={!date || loadingSlots}
+                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none disabled:opacity-60"
                 >
-                  <option value="">Select a time</option>
-                  {timeSlots.map((t) => (
+                  <option value="">
+                    {!date
+                      ? "Pick a date first"
+                      : loadingSlots
+                      ? "Checking availability…"
+                      : availableTimes.length === 0
+                      ? "Fully booked — try another day"
+                      : "Select a time"}
+                  </option>
+                  {availableTimes.map((t) => (
                     <option key={t} value={t}>
                       {t}
                     </option>
                   ))}
                 </select>
+                {bookingEnabled && date && !loadingSlots && (
+                  <p className="mt-1.5 text-xs text-ink-soft">
+                    Only available times are shown.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -391,6 +445,7 @@ export default function BookingModal({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-disabled={!canBook}
+                onClick={recordBooking}
                 className={`btn-primary flex-1 ${
                   !canBook ? "pointer-events-none opacity-50" : ""
                 }`}
@@ -398,7 +453,11 @@ export default function BookingModal({
                 <MessageCircle className="h-4 w-4" />
                 Book via WhatsApp
               </a>
-              <a href={emailLink(state)} className="btn-outline sm:w-auto">
+              <a
+                href={emailLink(state)}
+                onClick={recordBooking}
+                className="btn-outline sm:w-auto"
+              >
                 <Mail className="h-4 w-4" />
                 Email
               </a>
