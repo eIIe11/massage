@@ -23,9 +23,9 @@ export function getSupabase(): SupabaseClient | null {
 
 export const bookingEnabled = Boolean(url && anonKey);
 
-/** Business booking hours as hourly start slots (last treatment starts 21:00). */
+/** Business booking hours as hourly start slots (last treatment starts 20:00). */
 export const OPEN_HOUR = 10;
-export const CLOSE_HOUR = 22; // treatments must finish by 22:00
+export const CLOSE_HOUR = 21; // treatments must finish by 21:00 (9pm close)
 
 export const HOUR_SLOTS: string[] = Array.from(
   { length: CLOSE_HOUR - OPEN_HOUR },

@@ -25,7 +25,7 @@ export const business = {
   // Luxe Health Massage's own Google Maps pin (not Green Coconut Village).
   location: { lat: 9.5790986, lng: 99.9584161 },
   googleMapsUrl: "https://maps.app.goo.gl/eGqUfcNj4wJiQQ6v9",
-  hours: "Open daily · 10:00 – 22:00",
+  hours: "Open daily · 10:00 – 21:00",
   currency: "฿",
   rating: 5,
   experienceYears: 20,
