@@ -21,6 +21,7 @@ export interface Service {
   benefits?: string[];
   image?: string;
   featured?: boolean; // signature treatment
+  studioOnly?: boolean; // needs a proper massage bed — studio only, no in-home
 }
 
 export const categories: { id: Category; label: string; blurb: string }[] = [
@@ -69,6 +70,7 @@ export const services: Service[] = [
     name: "Thai Physical Body Balance",
     category: "wellness",
     featured: true,
+    studioOnly: true,
     image: "/images/therapist-female.jpg",
     short: "A 3-hour full-body reset for deep balance.",
     description:
@@ -251,6 +253,7 @@ export const services: Service[] = [
     name: "Hot Stone Massage",
     category: "classic",
     featured: true,
+    studioOnly: true,
     image: "/images/hotstone.jpg",
     short: "Warm stones melt deep tension & detoxify.",
     description:
@@ -384,6 +387,7 @@ export interface Package {
   includes: string[];
   image?: string;
   best?: boolean;
+  studioOnly?: boolean; // multi-part rituals — studio only
 }
 
 // Curated bundles built from the treatments above, at a small saving.
@@ -402,6 +406,7 @@ export const packages: Package[] = [
     ],
     image: "/images/lymphatic.jpg",
     best: true,
+    studioOnly: true,
   },
   {
     id: "after-sport-recovery",
@@ -415,6 +420,7 @@ export const packages: Package[] = [
       "Faster muscle recovery",
     ],
     image: "/images/therapist-female.jpg",
+    studioOnly: true,
   },
   {
     id: "toksen-revival",
@@ -428,6 +434,7 @@ export const packages: Package[] = [
       "Free energy flow & a brighter face",
     ],
     image: "/images/therapist-female.jpg",
+    studioOnly: true,
   },
   {
     id: "couples-escape",
@@ -441,6 +448,7 @@ export const packages: Package[] = [
       "Relax together, side by side",
     ],
     image: "/images/aroma.jpg",
+    studioOnly: true,
   },
 ];
 

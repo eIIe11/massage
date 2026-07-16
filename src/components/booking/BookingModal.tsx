@@ -1,30 +1,31 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   X,
-  MapPin,
+  Car,
   Home,
   Building2,
-  Crosshair,
   MessageCircle,
   Mail,
   Check,
-  Loader2,
+  Lock,
 } from "lucide-react";
 import { services, fromPrice } from "@/lib/services";
-import { business, distanceKm } from "@/lib/config";
+import {
+  travelZones,
+  travelZoneById,
+  IN_HOME_SURCHARGE,
+  whatsappLink,
+} from "@/lib/config";
 import {
   BookingState,
   bookingTotal,
   buildMessage,
   emailLink,
   money,
-  zoneInfo,
 } from "@/lib/booking";
-import { whatsappLink } from "@/lib/config";
 import {
   bookingEnabled,
   getTakenSlots,
@@ -32,15 +33,6 @@ import {
   createBooking,
   HOUR_SLOTS,
 } from "@/lib/supabase";
-
-const MapPicker = dynamic(() => import("./MapPicker"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center bg-cream-soft">
-      <Loader2 className="h-6 w-6 animate-spin text-luxe-700" />
-    </div>
-  ),
-});
 
 export default function BookingModal({
   initialServiceId,
@@ -61,10 +53,7 @@ export default function BookingModal({
   const [minutes, setMinutes] = useState(initial.options[0].minutes);
   const [mode, setMode] = useState<"spa" | "home">("spa");
   const [people, setPeople] = useState(1);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null
-  );
-  const [locating, setLocating] = useState(false);
+  const [zoneId, setZoneId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [name, setName] = useState("");
@@ -78,6 +67,11 @@ export default function BookingModal({
       setMinutes(service.options[0].minutes);
     }
   }, [service, minutes]);
+
+  // Studio-only treatments (need a proper massage bed) can't be done in-home.
+  useEffect(() => {
+    if (service.studioOnly && mode === "home") setMode("spa");
+  }, [service, mode]);
 
   // Fetch which slots are already taken for the chosen date.
   useEffect(() => {
@@ -119,8 +113,7 @@ export default function BookingModal({
     service.options.find((o) => o.minutes === minutes)?.price ??
     service.options[0].price;
 
-  const dist = coords ? distanceKm(business.location, coords) : undefined;
-  const zone = dist !== undefined ? zoneInfo(dist) : undefined;
+  const zone = mode === "home" ? travelZoneById(zoneId) : undefined;
 
   const state: BookingState = {
     serviceName: service.name,
@@ -132,27 +125,12 @@ export default function BookingModal({
     time,
     name,
     notes,
-    distanceKm: dist,
     travelFee: zone?.fee,
     zoneLabel: zone?.label,
-    coords: coords ?? undefined,
   };
 
   const total = bookingTotal(state);
-  const canBook = mode === "spa" || coords !== null;
-
-  const useMyLocation = () => {
-    if (!navigator.geolocation) return;
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocating(false);
-      },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  };
+  const canBook = mode === "spa" || zone !== undefined;
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -270,23 +248,38 @@ export default function BookingModal({
                   </div>
                 </button>
                 <button
-                  onClick={() => setMode("home")}
+                  onClick={() => !service.studioOnly && setMode("home")}
+                  disabled={service.studioOnly}
                   className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
-                    mode === "home"
+                    service.studioOnly
+                      ? "cursor-not-allowed border-black/10 bg-black/5 opacity-60"
+                      : mode === "home"
                       ? "border-luxe-700 bg-luxe-50"
                       : "border-black/10 bg-white hover:border-luxe-700/40"
                   }`}
                 >
-                  <Home className="h-5 w-5 text-luxe-700" />
+                  {service.studioOnly ? (
+                    <Lock className="h-5 w-5 text-ink-soft" />
+                  ) : (
+                    <Home className="h-5 w-5 text-luxe-700" />
+                  )}
                   <div>
                     <p className="text-sm font-medium text-ink">In-home</p>
-                    <p className="text-xs text-ink-soft">We come to you</p>
+                    <p className="text-xs text-ink-soft">
+                      {service.studioOnly ? "Studio only" : "We come to you"}
+                    </p>
                   </div>
                 </button>
               </div>
+              {service.studioOnly && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
+                  <Lock className="h-3.5 w-3.5" />
+                  This treatment is studio only — it needs a proper massage bed.
+                </p>
+              )}
             </div>
 
-            {/* In-home map + travel fee */}
+            {/* In-home zone + travel fee */}
             <AnimatePresence>
               {mode === "home" && (
                 <motion.div
@@ -295,40 +288,34 @@ export default function BookingModal({
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-ink">
-                      Drop a pin at your location
-                    </p>
-                    <button
-                      onClick={useMyLocation}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-luxe-700/10 px-3 py-1.5 text-xs font-medium text-luxe-800 hover:bg-luxe-700/20"
-                    >
-                      {locating ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Crosshair className="h-3.5 w-3.5" />
-                      )}
-                      Use my location
-                    </button>
-                  </div>
-                  <div className="mt-2 h-60 w-full overflow-hidden rounded-2xl ring-1 ring-black/10">
-                    <MapPicker coords={coords} onPick={(lat, lng) => setCoords({ lat, lng })} />
-                  </div>
+                  <label className="mb-2 block text-sm font-medium text-ink">
+                    Your area
+                  </label>
+                  <select
+                    value={zoneId}
+                    onChange={(e) => setZoneId(e.target.value)}
+                    className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
+                  >
+                    <option value="">Select your area…</option>
+                    {travelZones.map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.label} — +{money(z.fee)} travel
+                      </option>
+                    ))}
+                  </select>
                   <p className="mt-1.5 text-xs text-ink-soft">
-                    Tap the map (or drag the pin) to set where you&apos;d like the
-                    treatment.
+                    In-home adds +{money(IN_HOME_SURCHARGE)} per treatment, plus a
+                    simple travel fee by area.
                   </p>
 
-                  {zone && dist !== undefined && (
+                  {zone && (
                     <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 ring-1 ring-black/5">
                       <div className="flex items-center gap-2 text-sm text-ink">
-                        <MapPin className="h-4 w-4 text-luxe-700" />
-                        <span>
-                          {zone.label} · {dist.toFixed(1)} km away
-                        </span>
+                        <Car className="h-4 w-4 text-luxe-700" />
+                        <span>{zone.label}</span>
                       </div>
                       <span className="text-sm font-semibold text-luxe-800">
-                        {zone.fee === 0 ? "Free travel" : `+ ${money(zone.fee)}`}
+                        + {money(zone.fee)}
                       </span>
                     </div>
                   )}
@@ -428,7 +415,10 @@ export default function BookingModal({
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm text-ink-soft">
                 {service.name} · {minutes} min
-                {mode === "home" && zone && zone.fee > 0 && (
+                {mode === "home" && (
+                  <span> · +{money(IN_HOME_SURCHARGE * (people || 1))} in-home</span>
+                )}
+                {mode === "home" && zone && (
                   <span> · +{money(zone.fee)} travel</span>
                 )}
               </div>
@@ -462,9 +452,9 @@ export default function BookingModal({
                 Email
               </a>
             </div>
-            {mode === "home" && !coords && (
+            {mode === "home" && !zone && (
               <p className="mt-2 text-center text-xs text-luxe-700">
-                Please set your location on the map to continue.
+                Please choose your area to continue.
               </p>
             )}
             <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-ink-soft">

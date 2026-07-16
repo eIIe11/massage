@@ -18,8 +18,8 @@ const MapPicker = dynamic(() => import("./booking/MapPicker"), {
 
 const steps = [
   { icon: Home, title: "Choose in-home", text: "Select the in-home option when you book." },
-  { icon: MapPin, title: "Drop your pin", text: "Show us where you are on the map." },
-  { icon: Car, title: "See your travel fee", text: "Fee is calculated instantly by distance." },
+  { icon: MapPin, title: "Pick your area", text: "Choose Mae Nam / Bang Por, Bophut / Nathon or further." },
+  { icon: Car, title: "See your fee", text: "A simple flat travel fee by area — no surprises." },
   { icon: CalendarCheck, title: "We come to you", text: "Relax — Roong's team brings the spa." },
 ];
 
@@ -38,10 +38,10 @@ export default function InHome() {
             The spa, brought to your door.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft">
-            Enjoy any treatment in the comfort of your villa, hotel or
-            residence. Tell us where you are and we&apos;ll calculate a fair
-            travel fee based on the distance from our Bang Por studio — no
-            surprises.
+            Enjoy most treatments in the comfort of your villa, hotel or
+            residence. In-home adds <span className="font-semibold text-ink">+{money(200)} per treatment</span>,
+            plus a simple flat travel fee by area — no surprises. Our signature
+            packages stay in the studio, where we have a proper massage bed.
           </p>
 
           <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -70,10 +70,10 @@ export default function InHome() {
               </thead>
               <tbody className="divide-y divide-black/5 bg-white">
                 {travelZones.map((z) => (
-                  <tr key={z.label}>
+                  <tr key={z.id}>
                     <td className="px-4 py-2.5 text-ink">{z.label}</td>
                     <td className="px-4 py-2.5 text-right font-semibold text-luxe-800">
-                      {z.fee === 0 ? "Free" : money(z.fee)}
+                      {money(z.fee)}
                     </td>
                   </tr>
                 ))}
@@ -91,8 +91,8 @@ export default function InHome() {
             <MapPicker coords={null} onPick={() => openBooking()} />
           </div>
           <p className="mt-3 text-center text-sm text-ink-soft">
-            Our studio is the <span className="text-luxe-700">✦</span> pin.
-            Free travel within the shaded Bang Por &amp; Mae Nam zone.
+            Our studio is the <span className="text-luxe-700">✦</span> pin, in
+            Bang Por &amp; Mae Nam — the heart of our in-home service area.
           </p>
         </Reveal>
       </div>
