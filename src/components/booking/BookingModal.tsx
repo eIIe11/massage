@@ -17,6 +17,7 @@ import {
   travelZones,
   travelZoneById,
   IN_HOME_SURCHARGE,
+  IN_HOME_LAST_START,
   whatsappLink,
 } from "@/lib/config";
 import {
@@ -92,10 +93,15 @@ export default function BookingModal({
     };
   }, [date]);
 
-  const availableTimes = useMemo(
-    () => (bookingEnabled ? availableStartTimes(takenSlots, minutes) : HOUR_SLOTS),
-    [takenSlots, minutes]
-  );
+  const availableTimes = useMemo(() => {
+    const base = bookingEnabled
+      ? availableStartTimes(takenSlots, minutes)
+      : HOUR_SLOTS;
+    // In-villa can't start after the cutoff (staff travel + finish time).
+    return mode === "home"
+      ? base.filter((t) => t <= IN_HOME_LAST_START)
+      : base;
+  }, [takenSlots, minutes, mode]);
 
   // Drop a chosen time if it becomes unavailable (duration/date change).
   useEffect(() => {

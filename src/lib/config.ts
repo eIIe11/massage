@@ -42,6 +42,10 @@ export const mapsLink =
 // simple zone-based travel fee. All editable here — no map/distance maths.
 export const IN_HOME_SURCHARGE = 200; // ฿ added per treatment for in-home
 
+// Latest in-villa start time (HH:MM). In-villa bookings can't start after this
+// (studio bookings can still start later, up to the normal closing logic).
+export const IN_HOME_LAST_START = "19:30";
+
 export interface TravelZone {
   id: string;
   label: string;
