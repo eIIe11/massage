@@ -221,7 +221,8 @@ export default function BookingModal({
                         : "border-black/10 bg-white text-ink hover:border-luxe-700/50"
                     }`}
                   >
-                    {o.minutes} min · {money(o.price)}
+                    {o.minutes} min ·{" "}
+                    {money(mode === "home" ? o.price + IN_HOME_SURCHARGE : o.price)}
                   </button>
                 ))}
               </div>
@@ -303,11 +304,6 @@ export default function BookingModal({
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1.5 text-xs text-ink-soft">
-                    In-home adds +{money(IN_HOME_SURCHARGE)} per treatment, plus a
-                    simple travel fee by area.
-                  </p>
-
                   {zone && (
                     <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 ring-1 ring-black/5">
                       <div className="flex items-center gap-2 text-sm text-ink">
@@ -415,9 +411,7 @@ export default function BookingModal({
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm text-ink-soft">
                 {service.name} · {minutes} min
-                {mode === "home" && (
-                  <span> · +{money(IN_HOME_SURCHARGE * (people || 1))} in-home</span>
-                )}
+                {mode === "home" && <span> · in-home</span>}
                 {mode === "home" && zone && (
                   <span> · +{money(zone.fee)} travel</span>
                 )}

@@ -53,7 +53,11 @@ export interface TravelZone {
 export const travelZones: TravelZone[] = [
   { id: "maenam-bangpor", label: "Mae Nam / Bang Por", fee: 100 },
   { id: "bophut-nathon", label: "Bophut / Nathon", fee: 150 },
-  { id: "further", label: "Further afield", fee: 300 },
+  {
+    id: "further",
+    label: "Further north than Nathon & further south than Chaweng",
+    fee: 300,
+  },
 ];
 
 export const travelZoneById = (id: string): TravelZone | undefined =>
