@@ -31,10 +31,10 @@ export function buildMessage(b: BookingState): string {
   lines.push(`• Treatment: ${b.serviceName}`);
   lines.push(`• Duration: ${b.minutes} min`);
   if (b.people > 1) lines.push(`• Guests: ${b.people}`);
-  lines.push(`• Location: ${b.mode === "home" ? "In-home (outcall)" : "At the studio"}`);
+  lines.push(`• Location: ${b.mode === "home" ? "In-villa (outcall)" : "At the studio"}`);
   if (b.mode === "home") {
     const guests = b.people || 1;
-    lines.push(`• In-home surcharge: +${money(IN_HOME_SURCHARGE * guests)}`);
+    lines.push(`• In-villa surcharge: +${money(IN_HOME_SURCHARGE * guests)}`);
     if (b.zoneLabel) lines.push(`• Area: ${b.zoneLabel}`);
     lines.push(`• Travel fee: ${b.travelFee ? money(b.travelFee) : "—"}`);
   }

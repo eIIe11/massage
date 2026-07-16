@@ -198,7 +198,12 @@ export default function BookingModal({
               >
                 {services.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} — from {money(fromPrice(s))}
+                    {s.name} — from{" "}
+                    {money(
+                      mode === "home" && !s.studioOnly
+                        ? fromPrice(s) + IN_HOME_SURCHARGE
+                        : fromPrice(s)
+                    )}
                   </option>
                 ))}
               </select>
@@ -265,7 +270,7 @@ export default function BookingModal({
                     <Home className="h-5 w-5 text-luxe-700" />
                   )}
                   <div>
-                    <p className="text-sm font-medium text-ink">In-home</p>
+                    <p className="text-sm font-medium text-ink">In-villa</p>
                     <p className="text-xs text-ink-soft">
                       {service.studioOnly ? "Studio only" : "We come to you"}
                     </p>
@@ -411,7 +416,7 @@ export default function BookingModal({
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm text-ink-soft">
                 {service.name} · {minutes} min
-                {mode === "home" && <span> · in-home</span>}
+                {mode === "home" && <span> · in-villa</span>}
                 {mode === "home" && zone && (
                   <span> · +{money(zone.fee)} travel</span>
                 )}

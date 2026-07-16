@@ -17,7 +17,7 @@ const MapPicker = dynamic(() => import("./booking/MapPicker"), {
 });
 
 const steps = [
-  { icon: Home, title: "Choose in-home", text: "Select the in-home option when you book." },
+  { icon: Home, title: "Choose in-villa", text: "Select the in-villa option when you book." },
   { icon: MapPin, title: "Pick your area", text: "Choose Mae Nam / Bang Por, Bophut / Nathon or further." },
   { icon: Car, title: "See your fee", text: "A simple flat travel fee by area — no surprises." },
   { icon: CalendarCheck, title: "We come to you", text: "Relax — Roong's team brings the spa." },
@@ -32,14 +32,14 @@ export default function InHome() {
       <div className="container-luxe relative grid items-center gap-14 lg:grid-cols-2">
         <Reveal>
           <p className="eyebrow mb-4">
-            <span className="h-px w-8 bg-luxe-700" /> In-Home Service
+            <span className="h-px w-8 bg-luxe-700" /> In-Villa Service
           </p>
           <h2 className="heading text-4xl sm:text-5xl">
             The spa, brought to your door.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft">
             Enjoy most treatments in the comfort of your villa, hotel or
-            residence. In-home adds <span className="font-semibold text-ink">+{money(200)} per treatment</span>,
+            residence. In-villa adds <span className="font-semibold text-ink">+{money(200)} per treatment</span>,
             plus a simple flat travel fee by area — no surprises. Our signature
             packages stay in the studio, where we have a proper massage bed.
           </p>
@@ -82,7 +82,7 @@ export default function InHome() {
           </div>
 
           <button onClick={() => openBooking()} className="btn-primary mt-8">
-            Book an In-Home Treatment
+            Book an In-Villa Treatment
           </button>
         </Reveal>
 
@@ -92,7 +92,7 @@ export default function InHome() {
           </div>
           <p className="mt-3 text-center text-sm text-ink-soft">
             Our studio is the <span className="text-luxe-700">✦</span> pin, in
-            Bang Por &amp; Mae Nam — the heart of our in-home service area.
+            Bang Por &amp; Mae Nam — the heart of our in-villa service area.
           </p>
         </Reveal>
       </div>
