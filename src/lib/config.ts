@@ -25,7 +25,7 @@ export const business = {
   // Luxe Health Massage's own Google Maps pin (not Green Coconut Village).
   location: { lat: 9.5790986, lng: 99.9584161 },
   googleMapsUrl: "https://maps.app.goo.gl/eGqUfcNj4wJiQQ6v9",
-  hours: "Open daily · 10:00 – 22:00",
+  hours: "Open daily · 10:00 – 21:00",
   currency: "฿",
   rating: 5,
   experienceYears: 20,
@@ -38,37 +38,31 @@ export const mapsLink =
   "https://www.google.com/maps/search/?api=1&query=" +
   `${business.location.lat},${business.location.lng}`;
 
-// In-home (outcall) travel-fee tiers, by straight-line distance from the shop.
-// Prices are indicative — confirm with the owner. Editable here.
+// In-home (outcall) service. A flat surcharge is added per treatment, plus a
+// simple zone-based travel fee. All editable here — no map/distance maths.
+export const IN_HOME_SURCHARGE = 200; // ฿ added per treatment for in-home
+
+// Latest in-villa start time (HH:MM). In-villa bookings can't start after this
+// (studio bookings can still start later, up to the normal closing logic).
+export const IN_HOME_LAST_START = "19:30";
+
 export interface TravelZone {
-  maxKm: number;
-  fee: number;
+  id: string;
   label: string;
+  fee: number;
 }
 
+// Simple, honest zones. In-home is offered on the Mae Nam / Bang Por side and
+// the near neighbours; the far side of the island has heavy traffic.
 export const travelZones: TravelZone[] = [
-  { maxKm: 4, fee: 0, label: "Bang Por & Mae Nam" },
-  { maxKm: 8, fee: 150, label: "Bophut & Fisherman's Village" },
-  { maxKm: 14, fee: 300, label: "Chaweng, Choeng Mon & Nathon" },
-  { maxKm: 22, fee: 500, label: "Lamai & the south" },
-  { maxKm: Infinity, fee: 700, label: "Far side of the island" },
+  { id: "maenam-bangpor", label: "Mae Nam / Bang Por", fee: 100 },
+  { id: "bophut-nathon", label: "Bophut / Nathon", fee: 150 },
+  {
+    id: "further",
+    label: "Further north than Nathon & further south than Chaweng",
+    fee: 300,
+  },
 ];
 
-export const zoneForDistance = (km: number): TravelZone =>
-  travelZones.find((z) => km <= z.maxKm) ?? travelZones[travelZones.length - 1];
-
-// Haversine distance in kilometres.
-export const distanceKm = (
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number }
-): number => {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-};
+export const travelZoneById = (id: string): TravelZone | undefined =>
+  travelZones.find((z) => z.id === id);

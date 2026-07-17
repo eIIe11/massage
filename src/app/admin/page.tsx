@@ -308,7 +308,7 @@ export default function AdminPage() {
                     </p>
                     <p className="text-sm text-ink-soft">
                       {b.name || "—"}
-                      {b.mode === "home" ? " · In-home" : " · Studio"}
+                      {b.mode === "home" ? " · In-villa" : " · Studio"}
                       {b.people > 1 ? ` · ${b.people} guests` : ""}
                       {b.notes ? ` · ${b.notes}` : ""}
                     </p>

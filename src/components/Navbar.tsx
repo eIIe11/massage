@@ -9,7 +9,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 const links = [
   { href: "#treatments", label: "Treatments" },
   { href: "#packages", label: "Packages" },
-  { href: "#in-home", label: "In-Home" },
+  { href: "#in-home", label: "In-Villa" },
   { href: "#about", label: "About" },
   { href: "#visit", label: "Visit" },
 ];
@@ -30,7 +30,7 @@ export default function Navbar() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-cream/90 shadow-soft backdrop-blur-md"
+          ? "bg-cream/95 shadow-soft"
           : "bg-transparent"
       }`}
     >

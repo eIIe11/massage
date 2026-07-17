@@ -7,7 +7,7 @@ const items = [
   "Herbal Hot Compress",
   "Hot Stone",
   "Facial Care",
-  "In-Home Service",
+  "In-Villa Service",
 ];
 
 export default function TrustBar() {
