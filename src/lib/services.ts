@@ -95,7 +95,7 @@ export const services: Service[] = [
     description:
       "Focused Toksen tapping across the back, neck and shoulders to release tight, stubborn tension at the source — finished with warming Thai herbal balm.",
     benefits: ["Relieves stiff shoulders", "Frees tension", "Energising"],
-    options: [{ minutes: 60, price: 800 }, { minutes: 120, price: 1600 }],
+    options: [{ minutes: 60, price: 800 }, { minutes: 90, price: 1200 }, { minutes: 120, price: 1600 }],
   },
   {
     id: "face-lymphatic",
@@ -105,7 +105,7 @@ export const services: Service[] = [
     description:
       "A delicate facial lymphatic drainage with coconut oil that helps reduce puffiness and brighten the complexion, finished with a soothing shoulder and head massage.",
     benefits: ["De-puffs the face", "Brightens skin", "Deeply calming"],
-    options: [{ minutes: 60, price: 600 }, { minutes: 120, price: 1200 }],
+    options: [{ minutes: 60, price: 600 }, { minutes: 90, price: 900 }],
   },
   {
     id: "after-sport",
@@ -115,7 +115,7 @@ export const services: Service[] = [
     description:
       "A medium-pressure oil and balm massage designed for after exercise — easing worked muscles, relieving tension and supporting faster recovery.",
     benefits: ["Muscle recovery", "Relieves tension", "Medium pressure"],
-    options: [{ minutes: 60, price: 600 }, { minutes: 120, price: 1200 }],
+    options: [{ minutes: 60, price: 600 }, { minutes: 90, price: 900 }, { minutes: 120, price: 1200 }],
   },
 
   // ---- Massage & Bodywork ----
@@ -209,7 +209,7 @@ export const services: Service[] = [
     description:
       "Traditional Thai herbal therapy: warm poultices packed with Thai herbs are pressed along key areas after a pressure-point massage to soothe muscle tension and stiffness.",
     benefits: ["Relieves aches", "Aromatic & warming", "Reduces stiffness"],
-    options: [{ minutes: 60, price: 750 }, { minutes: 120, price: 1500 }],
+    options: [{ minutes: 60, price: 750 }, { minutes: 90, price: 1100 }, { minutes: 120, price: 1500 }],
   },
   {
     id: "oil-herbal-compress",
@@ -219,7 +219,7 @@ export const services: Service[] = [
     description:
       "A flowing oil massage combined with a warm Thai herbal compress to relieve tension, ease aches and calm the senses.",
     benefits: ["Deeply soothing", "Aromatic herbs", "Relieves aches"],
-    options: [{ minutes: 60, price: 800 }, { minutes: 120, price: 1600 }],
+    options: [{ minutes: 60, price: 800 }, { minutes: 90, price: 1200 }, { minutes: 120, price: 1600 }],
   },
   {
     id: "hot-stone",
@@ -232,7 +232,7 @@ export const services: Service[] = [
     description:
       "Smooth heated stones glide over the body with your choice of oil, radiating soothing warmth deep into the muscles to detoxify the body, ease tension and promote profound relaxation.",
     benefits: ["Melts deep tension", "Detoxifying", "Soothing warmth"],
-    options: [{ minutes: 60, price: 800 }, { minutes: 120, price: 1600 }],
+    options: [{ minutes: 60, price: 800 }, { minutes: 90, price: 1200 }, { minutes: 120, price: 1600 }],
   },
 
   // ---- Foot, Back & Body ----
@@ -245,7 +245,7 @@ export const services: Service[] = [
     description:
       "A relaxing foot massage with oil and warming balm — the perfect way to revive tired feet and relax the whole body.",
     benefits: ["Revives tired feet", "Relaxing", "Improves circulation"],
-    options: [{ minutes: 60, price: 400 }, { minutes: 120, price: 800 }],
+    options: [{ minutes: 60, price: 400 }, { minutes: 90, price: 600 }, { minutes: 120, price: 800 }],
   },
   {
     id: "foot-hot-stone",
@@ -255,7 +255,7 @@ export const services: Service[] = [
     description:
       "A foot massage using oil and warm stones to soothe aching feet and radiate relaxing warmth through the lower legs.",
     benefits: ["Soothing warmth", "Revives feet", "Relaxing"],
-    options: [{ minutes: 60, price: 500 }, { minutes: 120, price: 1000 }],
+    options: [{ minutes: 60, price: 500 }, { minutes: 90, price: 750 }],
   },
   {
     id: "foot-scrub",
@@ -265,7 +265,7 @@ export const services: Service[] = [
     description:
       "A gentle foot scrub to buff away rough, dry skin, followed by a relaxing oil-and-balm foot massage for soft, refreshed feet.",
     benefits: ["Softer feet", "Exfoliating", "Relaxing"],
-    options: [{ minutes: 60, price: 550 }, { minutes: 120, price: 1100 }],
+    options: [{ minutes: 60, price: 550 }, { minutes: 90, price: 800 }],
   },
   {
     id: "leg-arm-head",
@@ -275,7 +275,7 @@ export const services: Service[] = [
     description:
       "A focused massage of the legs, arms and head with your choice of oil — ideal for reviving tired limbs and clearing the mind.",
     benefits: ["Revives limbs", "Clears the mind", "Choose your oil"],
-    options: [{ minutes: 60, price: 500 }, { minutes: 120, price: 1000 }],
+    options: [{ minutes: 60, price: 500 }, { minutes: 90, price: 750 }, { minutes: 120, price: 1000 }],
   },
   {
     id: "back-shoulder-head",
@@ -285,7 +285,7 @@ export const services: Service[] = [
     description:
       "A focused treatment on the back, shoulders and head with oil and balm — perfect for office tension, travel stiffness or a quick reset.",
     benefits: ["Relieves stiffness", "Great for desk workers", "Quick reset"],
-    options: [{ minutes: 60, price: 500 }, { minutes: 120, price: 1000 }],
+    options: [{ minutes: 60, price: 500 }, { minutes: 90, price: 750 }, { minutes: 120, price: 1000 }],
   },
   {
     id: "back-foot",
@@ -295,7 +295,7 @@ export const services: Service[] = [
     description:
       "A combination treatment focusing on the back and the feet with oil and warming balm — relief where you need it most.",
     benefits: ["Relieves back tension", "Revives feet", "Balancing"],
-    options: [{ minutes: 60, price: 500 }, { minutes: 120, price: 1000 }],
+    options: [{ minutes: 60, price: 500 }, { minutes: 90, price: 750 }, { minutes: 120, price: 1000 }],
   },
   {
     id: "body-scrub",
@@ -305,7 +305,7 @@ export const services: Service[] = [
     description:
       "A gentle deep-cleansing treatment that exfoliates dull skin and leaves the entire body soft, smooth and radiant.",
     benefits: ["Softer skin", "Radiant glow", "Deep cleanse"],
-    options: [{ minutes: 60, price: 800 }, { minutes: 120, price: 1600 }],
+    options: [{ minutes: 60, price: 800 }, { minutes: 90, price: 1200 }, { minutes: 120, price: 1600 }],
   },
   {
     id: "aloe-after-sun",
@@ -315,7 +315,7 @@ export const services: Service[] = [
     description:
       "A cooling, soothing aloe vera treatment to calm and rehydrate skin after a day in the sun.",
     benefits: ["Cools sunburn", "Rehydrates", "Soothing"],
-    options: [{ minutes: 60, price: 600 }, { minutes: 120, price: 1200 }],
+    options: [{ minutes: 60, price: 600 }, { minutes: 90, price: 900 }, { minutes: 120, price: 1200 }],
   },
 
   // ---- Facial Care ----
@@ -327,7 +327,7 @@ export const services: Service[] = [
     description:
       "A nourishing facial massage with pure coconut oil to hydrate and soften the skin, finished with a relaxing shoulder and head massage.",
     benefits: ["Hydrates skin", "Relaxing", "Natural coconut oil"],
-    options: [{ minutes: 60, price: 600 }, { minutes: 120, price: 1200 }],
+    options: [{ minutes: 60, price: 600 }, { minutes: 90, price: 900 }, { minutes: 120, price: 1200 }],
   },
   {
     id: "aloe-facial",
@@ -337,7 +337,7 @@ export const services: Service[] = [
     description:
       "A calming facial with cooling aloe vera gel to soothe and refresh the complexion, finished with a relaxing shoulder and head massage.",
     benefits: ["Soothes & cools", "Refreshes skin", "Relaxing"],
-    options: [{ minutes: 60, price: 600 }, { minutes: 120, price: 1200 }],
+    options: [{ minutes: 60, price: 600 }, { minutes: 90, price: 900 }, { minutes: 120, price: 1200 }],
   },
   {
     id: "facial-toksen",
@@ -347,7 +347,7 @@ export const services: Service[] = [
     description:
       "Delicate Toksen tapping on the face stimulates circulation for a brighter complexion, helps soften the look of fine lines and adds oxygen to the skin — finished with a shoulder and head massage.",
     benefits: ["Brightens complexion", "Softens fine lines", "Relieves tension"],
-    options: [{ minutes: 60, price: 800 }, { minutes: 120, price: 1600 }],
+    options: [{ minutes: 60, price: 800 }, { minutes: 90, price: 1200 }, { minutes: 120, price: 1600 }],
   },
 ];
 
