@@ -11,6 +11,7 @@ import {
   Mail,
   Check,
   Lock,
+  Users,
 } from "lucide-react";
 import { services, fromPrice } from "@/lib/services";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/lib/config";
 import {
   BookingState,
+  GuestChoice,
   bookingTotal,
   buildMessage,
   emailLink,
@@ -35,6 +37,10 @@ import {
   HOUR_SLOTS,
 } from "@/lib/supabase";
 
+type GuestPick = { serviceId: string; minutes: number };
+
+const MAX_PEOPLE = 4;
+
 export default function BookingModal({
   initialServiceId,
   onClose,
@@ -45,15 +51,11 @@ export default function BookingModal({
   const initial =
     services.find((s) => s.id === initialServiceId) ?? services[0];
 
-  const [serviceId, setServiceId] = useState(initial.id);
-  const service = useMemo(
-    () => services.find((s) => s.id === serviceId) ?? services[0],
-    [serviceId]
-  );
-
-  const [minutes, setMinutes] = useState(initial.options[0].minutes);
-  const [mode, setMode] = useState<"spa" | "home">("spa");
   const [people, setPeople] = useState(1);
+  const [guests, setGuests] = useState<GuestPick[]>([
+    { serviceId: initial.id, minutes: initial.options[0].minutes },
+  ]);
+  const [mode, setMode] = useState<"spa" | "home">("spa");
   const [zoneId, setZoneId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -62,17 +64,54 @@ export default function BookingModal({
   const [takenSlots, setTakenSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
-  // Keep a valid duration when the service changes.
+  // Grow / shrink the per-person picks when the guest count changes.
   useEffect(() => {
-    if (!service.options.some((o) => o.minutes === minutes)) {
-      setMinutes(service.options[0].minutes);
-    }
-  }, [service, minutes]);
+    setGuests((prev) => {
+      if (people === prev.length) return prev;
+      const next = prev.slice(0, people);
+      while (next.length < people) {
+        const d = services[0];
+        next.push({ serviceId: d.id, minutes: d.options[0].minutes });
+      }
+      return next;
+    });
+  }, [people]);
 
-  // Studio-only treatments (need a proper massage bed) can't be done in-home.
+  const setGuestService = (i: number, serviceId: string) =>
+    setGuests((prev) =>
+      prev.map((g, idx) => {
+        if (idx !== i) return g;
+        const s = services.find((x) => x.id === serviceId) ?? services[0];
+        return { serviceId, minutes: s.options[0].minutes };
+      })
+    );
+
+  const setGuestMinutes = (i: number, minutes: number) =>
+    setGuests((prev) =>
+      prev.map((g, idx) => (idx === i ? { ...g, minutes } : g))
+    );
+
+  // Resolve each pick to its service + priced option.
+  const resolved = useMemo(
+    () =>
+      guests.map((g) => {
+        const s = services.find((x) => x.id === g.serviceId) ?? services[0];
+        const opt =
+          s.options.find((o) => o.minutes === g.minutes) ?? s.options[0];
+        return { service: s, minutes: opt.minutes, price: opt.price };
+      }),
+    [guests]
+  );
+
+  const anyStudioOnly = resolved.some((r) => r.service.studioOnly);
+
+  // Studio-only treatments (need a proper massage bed) can't be done in-villa.
   useEffect(() => {
-    if (service.studioOnly && mode === "home") setMode("spa");
-  }, [service, mode]);
+    if (anyStudioOnly && mode === "home") setMode("spa");
+  }, [anyStudioOnly, mode]);
+
+  // Slot occupancy is driven by the longest treatment (they run in parallel).
+  const maxMinutes = Math.max(...resolved.map((r) => r.minutes));
 
   // Fetch which slots are already taken for the chosen date.
   useEffect(() => {
@@ -95,13 +134,16 @@ export default function BookingModal({
 
   const availableTimes = useMemo(() => {
     const base = bookingEnabled
-      ? availableStartTimes(takenSlots, minutes)
-      : HOUR_SLOTS;
+      ? availableStartTimes(takenSlots, maxMinutes)
+      : HOUR_SLOTS.filter((s) => {
+          const endHour = Number(s.slice(0, 2)) + Math.ceil(maxMinutes / 60);
+          return endHour <= 21;
+        });
     // In-villa can't start after the cutoff (staff travel + finish time).
     return mode === "home"
       ? base.filter((t) => t <= IN_HOME_LAST_START)
       : base;
-  }, [takenSlots, minutes, mode]);
+  }, [takenSlots, maxMinutes, mode]);
 
   // Drop a chosen time if it becomes unavailable (duration/date change).
   useEffect(() => {
@@ -115,18 +157,17 @@ export default function BookingModal({
     };
   }, []);
 
-  const price =
-    service.options.find((o) => o.minutes === minutes)?.price ??
-    service.options[0].price;
+  const guestChoices: GuestChoice[] = resolved.map((r) => ({
+    serviceName: r.service.name,
+    minutes: r.minutes,
+    price: r.price,
+  }));
 
   const zone = mode === "home" ? travelZoneById(zoneId) : undefined;
 
   const state: BookingState = {
-    serviceName: service.name,
-    minutes,
-    price,
+    guests: guestChoices,
     mode,
-    people,
     date,
     time,
     name,
@@ -136,25 +177,73 @@ export default function BookingModal({
   };
 
   const total = bookingTotal(state);
-  const canBook = mode === "spa" || zone !== undefined;
+
+  // Everything that must be filled in before a booking can be sent.
+  const missing: string[] = [];
+  if (!name.trim()) missing.push("your name");
+  if (!date) missing.push("a date");
+  if (!time) missing.push("a time");
+  if (mode === "home" && !zone) missing.push("your area");
+  const canBook = missing.length === 0;
 
   const today = new Date().toISOString().split("T")[0];
 
   const [recorded, setRecorded] = useState(false);
   const recordBooking = () => {
-    if (!bookingEnabled || recorded || !date || !time) return;
+    if (!bookingEnabled || recorded || !canBook) return;
     setRecorded(true);
     createBooking({
-      serviceName: service.name,
-      minutes,
+      serviceName: guestChoices.map((g) => g.serviceName).join(" + "),
+      minutes: maxMinutes,
       mode,
-      people,
+      people: guestChoices.length,
       date,
       time,
       name,
       notes,
     });
   };
+
+  const durationButtons = (i: number) => {
+    const r = resolved[i];
+    return (
+      <div className="flex flex-wrap gap-2">
+        {r.service.options.map((o) => (
+          <button
+            key={o.minutes}
+            onClick={() => setGuestMinutes(i, o.minutes)}
+            className={`rounded-full border px-5 py-2.5 text-sm transition ${
+              r.minutes === o.minutes
+                ? "border-luxe-700 bg-luxe-700 text-cream"
+                : "border-black/10 bg-white text-ink hover:border-luxe-700/50"
+            }`}
+          >
+            {o.minutes} min ·{" "}
+            {money(mode === "home" ? o.price + IN_HOME_SURCHARGE : o.price)}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const serviceSelect = (i: number) => (
+    <select
+      value={guests[i].serviceId}
+      onChange={(e) => setGuestService(i, e.target.value)}
+      className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
+    >
+      {services.map((s) => (
+        <option key={s.id} value={s.id}>
+          {s.name} — from{" "}
+          {money(
+            mode === "home" && !s.studioOnly
+              ? fromPrice(s) + IN_HOME_SURCHARGE
+              : fromPrice(s)
+          )}
+        </option>
+      ))}
+    </select>
+  );
 
   return (
     <AnimatePresence>
@@ -192,57 +281,81 @@ export default function BookingModal({
 
           {/* Body */}
           <div className="flex-1 space-y-7 overflow-y-auto px-6 py-6">
-            {/* Service */}
+            {/* People */}
             <div>
               <label className="mb-2 block text-sm font-medium text-ink">
-                1 · Choose a treatment
+                1 · How many people?
               </label>
-              <select
-                value={serviceId}
-                onChange={(e) => setServiceId(e.target.value)}
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
-              >
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} — from{" "}
-                    {money(
-                      mode === "home" && !s.studioOnly
-                        ? fromPrice(s) + IN_HOME_SURCHARGE
-                        : fromPrice(s)
-                    )}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-2 text-sm text-ink-soft">{service.short}</p>
+              <div className="flex gap-2">
+                {Array.from({ length: MAX_PEOPLE }, (_, idx) => idx + 1).map(
+                  (n) => (
+                    <button
+                      key={n}
+                      onClick={() => setPeople(n)}
+                      className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-medium transition ${
+                        people === n
+                          ? "border-luxe-700 bg-luxe-700 text-cream"
+                          : "border-black/10 bg-white text-ink hover:border-luxe-700/50"
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  )
+                )}
+              </div>
+              {people > 1 && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
+                  <Users className="h-3.5 w-3.5" />
+                  Choose a treatment for each person below.
+                </p>
+              )}
             </div>
 
-            {/* Duration */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-ink">
-                2 · Duration
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {service.options.map((o) => (
-                  <button
-                    key={o.minutes}
-                    onClick={() => setMinutes(o.minutes)}
-                    className={`rounded-full border px-5 py-2.5 text-sm transition ${
-                      minutes === o.minutes
-                        ? "border-luxe-700 bg-luxe-700 text-cream"
-                        : "border-black/10 bg-white text-ink hover:border-luxe-700/50"
-                    }`}
-                  >
-                    {o.minutes} min ·{" "}
-                    {money(mode === "home" ? o.price + IN_HOME_SURCHARGE : o.price)}
-                  </button>
-                ))}
+            {/* Treatment(s) */}
+            {people === 1 ? (
+              <>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-ink">
+                    2 · Choose a treatment
+                  </label>
+                  {serviceSelect(0)}
+                  <p className="mt-2 text-sm text-ink-soft">
+                    {resolved[0].service.short}
+                  </p>
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-ink">
+                    3 · Duration
+                  </label>
+                  {durationButtons(0)}
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-ink">
+                  2 · Treatments
+                </label>
+                <div className="space-y-4">
+                  {guests.map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl border border-black/10 bg-white/60 p-4"
+                    >
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-luxe-700">
+                        Person {i + 1}
+                      </p>
+                      {serviceSelect(i)}
+                      <div className="mt-3">{durationButtons(i)}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Location mode */}
             <div>
               <label className="mb-2 block text-sm font-medium text-ink">
-                3 · Where?
+                {people === 1 ? "4" : "3"} · Where?
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -260,17 +373,17 @@ export default function BookingModal({
                   </div>
                 </button>
                 <button
-                  onClick={() => !service.studioOnly && setMode("home")}
-                  disabled={service.studioOnly}
+                  onClick={() => !anyStudioOnly && setMode("home")}
+                  disabled={anyStudioOnly}
                   className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
-                    service.studioOnly
+                    anyStudioOnly
                       ? "cursor-not-allowed border-black/10 bg-black/5 opacity-60"
                       : mode === "home"
                       ? "border-luxe-700 bg-luxe-50"
                       : "border-black/10 bg-white hover:border-luxe-700/40"
                   }`}
                 >
-                  {service.studioOnly ? (
+                  {anyStudioOnly ? (
                     <Lock className="h-5 w-5 text-ink-soft" />
                   ) : (
                     <Home className="h-5 w-5 text-luxe-700" />
@@ -278,20 +391,21 @@ export default function BookingModal({
                   <div>
                     <p className="text-sm font-medium text-ink">In-villa</p>
                     <p className="text-xs text-ink-soft">
-                      {service.studioOnly ? "Studio only" : "We come to you"}
+                      {anyStudioOnly ? "Studio only" : "We come to you"}
                     </p>
                   </div>
                 </button>
               </div>
-              {service.studioOnly && (
+              {anyStudioOnly && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
                   <Lock className="h-3.5 w-3.5" />
-                  This treatment is studio only — it needs a proper massage bed.
+                  A selected treatment is studio only — it needs a proper massage
+                  bed.
                 </p>
               )}
             </div>
 
-            {/* In-home zone + travel fee */}
+            {/* In-villa zone + travel fee */}
             <AnimatePresence>
               {mode === "home" && (
                 <motion.div
@@ -326,27 +440,6 @@ export default function BookingModal({
                       </span>
                     </div>
                   )}
-
-                  <div className="mt-3">
-                    <label className="mb-1 block text-xs font-medium text-ink-soft">
-                      Guests
-                    </label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3].map((n) => (
-                        <button
-                          key={n}
-                          onClick={() => setPeople(n)}
-                          className={`h-9 w-9 rounded-full border text-sm transition ${
-                            people === n
-                              ? "border-luxe-700 bg-luxe-700 text-cream"
-                              : "border-black/10 bg-white text-ink"
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -355,7 +448,7 @@ export default function BookingModal({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-ink">
-                  4 · Date
+                  {people === 1 ? "5" : "4"} · Date
                 </label>
                 <input
                   type="date"
@@ -400,13 +493,18 @@ export default function BookingModal({
 
             {/* Name / notes */}
             <div className="grid grid-cols-1 gap-4">
-              <input
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
-              />
+              <div>
+                <label className="mb-2 block text-sm font-medium text-ink">
+                  {people === 1 ? "6" : "5"} · Your name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
+                />
+              </div>
               <textarea
                 placeholder="Anything we should know? (injuries, preferences, pressure…)"
                 value={notes}
@@ -421,7 +519,8 @@ export default function BookingModal({
           <div className="border-t border-black/5 bg-white/70 px-6 py-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm text-ink-soft">
-                {service.name} · {minutes} min
+                {people === 1 ? guestChoices[0].serviceName : `${people} people`}{" "}
+                · {maxMinutes} min
                 {mode === "home" && <span> · in-villa</span>}
                 {mode === "home" && zone && (
                   <span> · +{money(zone.fee)} travel</span>
@@ -449,17 +548,20 @@ export default function BookingModal({
                 Book via WhatsApp
               </a>
               <a
-                href={emailLink(state)}
+                href={canBook ? emailLink(state) : undefined}
+                aria-disabled={!canBook}
                 onClick={recordBooking}
-                className="btn-outline sm:w-auto"
+                className={`btn-outline sm:w-auto ${
+                  !canBook ? "pointer-events-none opacity-50" : ""
+                }`}
               >
                 <Mail className="h-4 w-4" />
                 Email
               </a>
             </div>
-            {mode === "home" && !zone && (
+            {!canBook && (
               <p className="mt-2 text-center text-xs text-luxe-700">
-                Please choose your area to continue.
+                Please add {missing.join(", ")} to continue.
               </p>
             )}
             <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-ink-soft">
