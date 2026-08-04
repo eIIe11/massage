@@ -29,14 +29,47 @@ create table if not exists public.blocks (
   unique (block_date, block_time)
 );
 
+-- Lightweight contact/enquiry tracking (phone tap, WhatsApp, email, socials…).
+-- Anyone may INSERT; only the signed-in owner/dev may read.
+create table if not exists public.events (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  type text not null,                  -- e.g. whatsapp_enquiry | phone_click | email_enquiry | instagram_click
+  detail text
+);
+
+-- Private notification config for dev Telegram pings. RLS on with NO policy,
+-- so it is unreadable by anon/authenticated — only the security-definer
+-- trigger (and the service role) can read the token.
+create table if not exists public.notify_config (
+  id int primary key default 1,
+  telegram_token text,
+  telegram_chat_id text
+);
+
 create index if not exists bookings_date_idx on public.bookings (booking_date);
 create index if not exists blocks_date_idx on public.blocks (block_date);
+create index if not exists events_created_idx on public.events (created_at);
 
 -- =========================================================================
 -- Row Level Security
 -- =========================================================================
-alter table public.bookings enable row level security;
-alter table public.blocks   enable row level security;
+alter table public.bookings      enable row level security;
+alter table public.blocks        enable row level security;
+alter table public.events        enable row level security;
+alter table public.notify_config enable row level security;
+
+-- Public may log a contact event (no reading).
+drop policy if exists "anon insert events" on public.events;
+create policy "anon insert events"
+  on public.events for insert
+  to anon, authenticated
+  with check (true);
+
+-- Only the signed-in owner/dev can read events (for stats).
+drop policy if exists "owner read events" on public.events;
+create policy "owner read events"
+  on public.events for select to authenticated using (true);
 
 -- Public may create a booking request (no reading of others' data).
 drop policy if exists "anon insert bookings" on public.bookings;
@@ -90,3 +123,64 @@ as $$
 $$;
 
 grant execute on function public.taken_slots(date) to anon, authenticated;
+
+-- =========================================================================
+-- Dev Telegram pings — fire on every new booking and contact event.
+-- Uses pg_net to POST to the Telegram Bot API. The bot token + chat id live
+-- in the private notify_config table (never in the repo). Insert them once:
+--
+--   insert into public.notify_config (id, telegram_token, telegram_chat_id)
+--   values (1, '<BOT_TOKEN>', '<CHAT_ID>')
+--   on conflict (id) do update
+--     set telegram_token = excluded.telegram_token,
+--         telegram_chat_id = excluded.telegram_chat_id;
+--
+-- If notify_config is empty the trigger is a no-op (bookings still save).
+-- =========================================================================
+create extension if not exists pg_net;
+
+create or replace function public.notify_telegram()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  cfg public.notify_config%rowtype;
+  msg text;
+begin
+  select * into cfg from public.notify_config where id = 1;
+  if cfg.telegram_token is null or cfg.telegram_chat_id is null then
+    return new;
+  end if;
+
+  if tg_table_name = 'bookings' then
+    msg := '🗓 New booking' || chr(10)
+        || new.service_name || ' · ' || new.minutes || 'm · '
+        || (case when new.mode = 'home' then 'In-villa' else 'Studio' end)
+        || ' · ' || new.people || 'p' || chr(10)
+        || new.booking_date || ' ' || new.booking_time || chr(10)
+        || coalesce(new.name, '—');
+  else
+    msg := '📩 New enquiry: ' || new.type
+        || coalesce(chr(10) || new.detail, '');
+  end if;
+
+  perform net.http_post(
+    url := 'https://api.telegram.org/bot' || cfg.telegram_token || '/sendMessage',
+    body := jsonb_build_object('chat_id', cfg.telegram_chat_id, 'text', msg),
+    headers := '{"Content-Type": "application/json"}'::jsonb
+  );
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_notify_booking on public.bookings;
+create trigger trg_notify_booking
+  after insert on public.bookings
+  for each row execute function public.notify_telegram();
+
+drop trigger if exists trg_notify_event on public.events;
+create trigger trg_notify_event
+  after insert on public.events
+  for each row execute function public.notify_telegram();

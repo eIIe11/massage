@@ -104,3 +104,16 @@ export async function createBooking(input: {
   });
   return !error;
 }
+
+/**
+ * Log a lightweight contact/enquiry event (fire-and-forget). Used for private
+ * dev stats + Telegram pings — never blocks or surfaces errors to the visitor.
+ */
+export function logEvent(type: string, detail?: string): void {
+  const sb = getSupabase();
+  if (!sb) return;
+  void sb
+    .from("events")
+    .insert({ type, detail: detail ?? null })
+    .then(() => {});
+}

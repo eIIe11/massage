@@ -2,6 +2,7 @@
 
 import { MapPin, Clock, Phone, Mail, Instagram, MessageCircle } from "lucide-react";
 import { business, whatsappLink } from "@/lib/config";
+import { logEvent } from "@/lib/supabase";
 import { useBooking } from "./booking/BookingProvider";
 import Reveal from "./Reveal";
 
@@ -14,6 +15,7 @@ export default function Visit() {
       label: "Find us",
       value: business.addressLines.join(", "),
       href: business.googleMapsUrl,
+      event: "map_click",
     },
     { icon: Clock, label: "Hours", value: business.hours },
     {
@@ -21,19 +23,28 @@ export default function Visit() {
       label: "Call",
       value: business.phoneDisplay,
       href: `tel:${business.phone}`,
+      event: "phone_click",
     },
     {
       icon: MessageCircle,
       label: "WhatsApp",
       value: business.whatsappDisplay,
       href: whatsappLink("Hello Luxe Health Massage! I'd like to ask about a booking."),
+      event: "whatsapp_enquiry",
     },
-    { icon: Mail, label: "Email", value: business.email, href: `mailto:${business.email}` },
+    {
+      icon: Mail,
+      label: "Email",
+      value: business.email,
+      href: `mailto:${business.email}`,
+      event: "email_enquiry",
+    },
     {
       icon: Instagram,
       label: "Instagram",
       value: business.instagramHandle,
       href: business.instagram,
+      event: "instagram_click",
     },
   ];
 
@@ -68,6 +79,7 @@ export default function Visit() {
                       href={c.href}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => c.event && logEvent(c.event, "Visit section")}
                       className="text-cream/90 transition hover:text-gold-light"
                     >
                       {c.value}
