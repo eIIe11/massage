@@ -19,8 +19,9 @@ import {
   occupiedSlots,
   type BookingRow,
 } from "@/lib/supabase";
+import { THERAPISTS } from "@/lib/config";
 
-type SlotState = "free" | "blocked" | "booked";
+type SlotState = "free" | "blocked" | "partial" | "full";
 
 const todayStr = () => new Date().toISOString().split("T")[0];
 const prettyDate = (d: string) =>
@@ -101,26 +102,28 @@ export default function AdminPage() {
     await sb?.auth.signOut();
   };
 
-  // Which hourly slots are consumed by active bookings.
-  const bookedSlots = new Set<string>();
+  // How many therapists each hourly slot uses (one per guest, spanning duration).
+  const busyBySlot: Record<string, number> = {};
   bookings
     .filter((b) => b.status !== "cancelled")
     .forEach((b) =>
-      occupiedSlots(b.booking_time.slice(0, 5), b.minutes).forEach((s) =>
-        bookedSlots.add(s)
-      )
+      occupiedSlots(b.booking_time.slice(0, 5), b.minutes).forEach((s) => {
+        busyBySlot[s] = (busyBySlot[s] ?? 0) + Math.max(1, b.people);
+      })
     );
 
   const stateFor = (time: string): SlotState => {
-    if (bookedSlots.has(time)) return "booked";
+    const busy = busyBySlot[time] ?? 0;
+    if (busy >= THERAPISTS) return "full";
     if (blocks[time]) return "blocked";
+    if (busy > 0) return "partial";
     return "free";
   };
 
   const toggleSlot = async (time: string) => {
     if (!sb) return;
     const st = stateFor(time);
-    if (st === "booked") return; // can't block a booked slot
+    if (st === "full") return; // no therapists left to free up
     if (st === "blocked") {
       const id = blocks[time];
       setBlocks((m) => {
@@ -262,7 +265,9 @@ export default function AdminPage() {
         {/* Slot grid */}
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <p className="mb-3 text-sm text-ink-soft">
-            Tap a free slot to mark it <b>unavailable</b>. Tap again to reopen it. Booked slots are locked.
+            Each slot shows how many of your {THERAPISTS} therapists are booked. Slots
+            stay open until all {THERAPISTS} are busy. Tap a slot to mark it{" "}
+            <b>unavailable</b>, tap again to reopen.
           </p>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {HOUR_SLOTS.map((t) => {
@@ -271,19 +276,25 @@ export default function AdminPage() {
                 <button
                   key={t}
                   onClick={() => toggleSlot(t)}
-                  disabled={st === "booked"}
+                  disabled={st === "full"}
                   className={
                     "rounded-xl px-3 py-3 text-sm font-medium transition " +
-                    (st === "booked"
+                    (st === "full"
                       ? "cursor-not-allowed bg-luxe-700 text-cream"
                       : st === "blocked"
                       ? "bg-ink/70 text-cream"
+                      : st === "partial"
+                      ? "bg-amber-50 text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100"
                       : "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200 hover:bg-emerald-100")
                   }
                 >
                   {t}
                   <span className="mt-0.5 block text-[10px] font-normal opacity-80">
-                    {st === "booked" ? "Booked" : st === "blocked" ? "Unavailable" : "Open"}
+                    {st === "blocked"
+                      ? "Unavailable"
+                      : st === "full"
+                      ? `Full ${THERAPISTS}/${THERAPISTS}`
+                      : `${busyBySlot[t] ?? 0}/${THERAPISTS} booked`}
                   </span>
                 </button>
               );

@@ -125,6 +125,54 @@ $$;
 grant execute on function public.taken_slots(date) to anon, authenticated;
 
 -- =========================================================================
+-- Capacity-aware availability. With several therapists on shift a slot stays
+-- open until every therapist is busy, so this returns how many therapists are
+-- occupied per hourly slot plus whether the owner blocked it outright.
+-- Multi-person bookings occupy one therapist per guest. No PII exposed.
+-- =========================================================================
+create or replace function public.slot_load(d date)
+returns table (slot_time text, busy int, blocked boolean)
+language sql
+security definer
+set search_path = public
+as $$
+  with occupied as (
+    select to_char(
+             (b.booking_time::time) + make_interval(hours => g.i),
+             'HH24:MI'
+           ) as slot_time,
+           greatest(1, coalesce(b.people, 1)) as people
+    from public.bookings b
+    cross join lateral generate_series(0, greatest(0, ceil(b.minutes / 60.0)::int - 1)) as g(i)
+    where b.booking_date = d
+      and b.status <> 'cancelled'
+  ),
+  busy_by_slot as (
+    select o.slot_time, sum(o.people)::int as busy
+    from occupied o
+    group by o.slot_time
+  ),
+  blocked_slots as (
+    select substring(bl.block_time from 1 for 5) as slot_time
+    from public.blocks bl
+    where bl.block_date = d
+  ),
+  all_slots as (
+    select slot_time from busy_by_slot
+    union
+    select slot_time from blocked_slots
+  )
+  select s.slot_time,
+         coalesce(bb.busy, 0) as busy,
+         (bs.slot_time is not null) as blocked
+  from all_slots s
+  left join busy_by_slot bb on bb.slot_time = s.slot_time
+  left join blocked_slots bs on bs.slot_time = s.slot_time;
+$$;
+
+grant execute on function public.slot_load(date) to anon, authenticated;
+
+-- =========================================================================
 -- Dev Telegram pings — fire on every new booking and contact event.
 -- Uses pg_net to POST to the Telegram Bot API. The bot token + chat id live
 -- in the private notify_config table (never in the repo). Insert them once:

@@ -31,10 +31,11 @@ import {
 } from "@/lib/booking";
 import {
   bookingEnabled,
-  getTakenSlots,
+  getSlotLoad,
   availableStartTimes,
   createBooking,
   HOUR_SLOTS,
+  type SlotLoad,
 } from "@/lib/supabase";
 
 type GuestPick = { serviceId: string; minutes: number };
@@ -61,7 +62,7 @@ export default function BookingModal({
   const [time, setTime] = useState("");
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
-  const [takenSlots, setTakenSlots] = useState<string[]>([]);
+  const [slotLoad, setSlotLoad] = useState<SlotLoad>({});
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   // Grow / shrink the per-person picks when the guest count changes.
@@ -113,17 +114,17 @@ export default function BookingModal({
   // Slot occupancy is driven by the longest treatment (they run in parallel).
   const maxMinutes = Math.max(...resolved.map((r) => r.minutes));
 
-  // Fetch which slots are already taken for the chosen date.
+  // Fetch how many therapists are already busy per slot for the chosen date.
   useEffect(() => {
     if (!bookingEnabled || !date) {
-      setTakenSlots([]);
+      setSlotLoad({});
       return;
     }
     let active = true;
     setLoadingSlots(true);
-    getTakenSlots(date).then((slots) => {
+    getSlotLoad(date).then((load) => {
       if (active) {
-        setTakenSlots(slots);
+        setSlotLoad(load);
         setLoadingSlots(false);
       }
     });
@@ -134,7 +135,7 @@ export default function BookingModal({
 
   const availableTimes = useMemo(() => {
     const base = bookingEnabled
-      ? availableStartTimes(takenSlots, maxMinutes)
+      ? availableStartTimes(slotLoad, maxMinutes, people)
       : HOUR_SLOTS.filter((s) => {
           const endHour = Number(s.slice(0, 2)) + Math.ceil(maxMinutes / 60);
           return endHour <= 21;
@@ -143,7 +144,7 @@ export default function BookingModal({
     return mode === "home"
       ? base.filter((t) => t <= IN_HOME_LAST_START)
       : base;
-  }, [takenSlots, maxMinutes, mode]);
+  }, [slotLoad, maxMinutes, people, mode]);
 
   // Drop a chosen time if it becomes unavailable (duration/date change).
   useEffect(() => {

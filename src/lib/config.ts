@@ -31,6 +31,10 @@ export const business = {
   experienceYears: 20,
 } as const;
 
+// How many treatments can run at the same time (therapists on shift). A slot
+// stays bookable until every therapist is busy; each guest takes one therapist.
+export const THERAPISTS = 7;
+
 export const whatsappLink = (message: string) =>
   `https://wa.me/${business.whatsapp}?text=${encodeURIComponent(message)}`;
 

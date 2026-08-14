@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { THERAPISTS } from "./config";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -44,7 +45,9 @@ export function occupiedSlots(start: string, minutes: number): string[] {
   return Array.from({ length: span }, (_, i) => `${String(startHour + i).padStart(2, "0")}:00`);
 }
 
-export type SlotRow = { slot_time: string };
+export type SlotLoadRow = { slot_time: string; busy: number; blocked: boolean };
+/** How many therapists are busy per hourly slot, and owner-blocked slots. */
+export type SlotLoad = Record<string, { busy: number; blocked: boolean }>;
 export type BookingRow = {
   id: string;
   created_at: string;
@@ -59,23 +62,38 @@ export type BookingRow = {
   status: string;
 };
 
-/** Taken hourly slots (HH:MM) for a date — bookings expanded by duration + manual blocks. */
-export async function getTakenSlots(date: string): Promise<string[]> {
+/** Therapist load per hourly slot for a date (bookings by guest count + blocks). */
+export async function getSlotLoad(date: string): Promise<SlotLoad> {
   const sb = getSupabase();
-  if (!sb || !date) return [];
-  const { data, error } = await sb.rpc("taken_slots", { d: date });
-  if (error || !data) return [];
-  return (data as SlotRow[]).map((r) => r.slot_time.slice(0, 5));
+  if (!sb || !date) return {};
+  const { data, error } = await sb.rpc("slot_load", { d: date });
+  if (error || !data) return {};
+  const load: SlotLoad = {};
+  (data as SlotLoadRow[]).forEach((r) => {
+    load[r.slot_time.slice(0, 5)] = { busy: r.busy, blocked: r.blocked };
+  });
+  return load;
 }
 
-/** Start times where a treatment of `minutes` fits without overlapping a taken slot. */
-export function availableStartTimes(taken: string[], minutes: number): string[] {
-  const takenSet = new Set(taken);
+/**
+ * Start times where a treatment of `minutes` for `guests` people fits: every
+ * hour it spans must close before closing time, not be blocked by the owner,
+ * and still have a free therapist for each guest.
+ */
+export function availableStartTimes(
+  load: SlotLoad,
+  minutes: number,
+  guests = 1,
+  capacity = THERAPISTS
+): string[] {
   return HOUR_SLOTS.filter((start) => {
-    const needed = occupiedSlots(start, minutes);
     const endHour = Number(start.slice(0, 2)) + slotsForMinutes(minutes);
     if (endHour > CLOSE_HOUR) return false; // would run past closing
-    return needed.every((s) => !takenSet.has(s));
+    return occupiedSlots(start, minutes).every((s) => {
+      const slot = load[s];
+      if (!slot) return true;
+      return !slot.blocked && slot.busy + guests <= capacity;
+    });
   });
 }
 
