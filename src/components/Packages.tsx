@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Building2 } from "lucide-react";
 import { packages } from "@/lib/services";
 import { money } from "@/lib/booking";
 import { useBooking } from "./booking/BookingProvider";
@@ -56,6 +56,11 @@ export default function Packages() {
                 <div className="flex flex-1 flex-col p-6">
                   <h3 className="font-serif text-2xl text-ink">{p.name}</h3>
                   <p className="mt-1 text-sm italic text-ink-soft">{p.tagline}</p>
+                  {p.studioOnly && (
+                    <p className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full bg-luxe-50 px-2.5 py-1 text-xs font-medium text-luxe-800">
+                      <Building2 className="h-3 w-3" /> Studio only
+                    </p>
+                  )}
                   <ul className="mt-4 flex-1 space-y-2">
                     {p.includes.map((inc) => (
                       <li

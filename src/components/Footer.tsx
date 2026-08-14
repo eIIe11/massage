@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import { Instagram, Facebook, MessageCircle } from "lucide-react";
 import { business, whatsappLink } from "@/lib/config";
+import { logEvent } from "@/lib/supabase";
 
 export default function Footer() {
   return (
@@ -25,6 +28,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
+              onClick={() => logEvent("instagram_click", "Footer")}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-luxe-700"
             >
               <Instagram className="h-4 w-4" />
@@ -34,6 +38,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
+              onClick={() => logEvent("facebook_click", "Footer")}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-luxe-700"
             >
               <Facebook className="h-4 w-4" />
@@ -43,6 +48,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"
+              onClick={() => logEvent("whatsapp_enquiry", "Footer")}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-luxe-700"
             >
               <MessageCircle className="h-4 w-4" />

@@ -55,9 +55,22 @@
   .grain {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  /* Decorative blurred glow orb */
+  /* Decorative glow orb — soft-edged via a gradient mask instead of a costly
+     blur() filter, so it composites cheaply and doesn't jank on scroll. */
   .glow-orb {
-    @apply pointer-events-none absolute rounded-full blur-[100px];
+    @apply pointer-events-none absolute rounded-full;
+    -webkit-mask-image: radial-gradient(
+      closest-side,
+      #000 0%,
+      rgba(0, 0, 0, 0.45) 45%,
+      transparent 76%
+    );
+    mask-image: radial-gradient(
+      closest-side,
+      #000 0%,
+      rgba(0, 0, 0, 0.45) 45%,
+      transparent 76%
+    );
   }
   .text-glow {
     text-shadow: 0 2px 30px rgba(139, 37, 48, 0.25);

@@ -1,46 +1,46 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   X,
-  MapPin,
+  Car,
   Home,
   Building2,
-  Crosshair,
   MessageCircle,
   Mail,
   Check,
-  Loader2,
+  Lock,
+  Users,
 } from "lucide-react";
 import { services, fromPrice } from "@/lib/services";
-import { business, distanceKm } from "@/lib/config";
+import {
+  travelZones,
+  travelZoneById,
+  IN_HOME_SURCHARGE,
+  IN_HOME_LAST_START,
+  whatsappLink,
+} from "@/lib/config";
 import {
   BookingState,
+  GuestChoice,
   bookingTotal,
   buildMessage,
   emailLink,
   money,
-  zoneInfo,
 } from "@/lib/booking";
-import { whatsappLink } from "@/lib/config";
 import {
   bookingEnabled,
-  getTakenSlots,
+  getSlotLoad,
   availableStartTimes,
   createBooking,
   HOUR_SLOTS,
+  type SlotLoad,
 } from "@/lib/supabase";
 
-const MapPicker = dynamic(() => import("./MapPicker"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center bg-cream-soft">
-      <Loader2 className="h-6 w-6 animate-spin text-luxe-700" />
-    </div>
-  ),
-});
+type GuestPick = { serviceId: string; minutes: number };
+
+const MAX_PEOPLE = 4;
 
 export default function BookingModal({
   initialServiceId,
@@ -52,44 +52,79 @@ export default function BookingModal({
   const initial =
     services.find((s) => s.id === initialServiceId) ?? services[0];
 
-  const [serviceId, setServiceId] = useState(initial.id);
-  const service = useMemo(
-    () => services.find((s) => s.id === serviceId) ?? services[0],
-    [serviceId]
-  );
-
-  const [minutes, setMinutes] = useState(initial.options[0].minutes);
-  const [mode, setMode] = useState<"spa" | "home">("spa");
   const [people, setPeople] = useState(1);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null
-  );
-  const [locating, setLocating] = useState(false);
+  const [guests, setGuests] = useState<GuestPick[]>([
+    { serviceId: initial.id, minutes: initial.options[0].minutes },
+  ]);
+  const [mode, setMode] = useState<"spa" | "home">("spa");
+  const [zoneId, setZoneId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
-  const [takenSlots, setTakenSlots] = useState<string[]>([]);
+  const [slotLoad, setSlotLoad] = useState<SlotLoad>({});
   const [loadingSlots, setLoadingSlots] = useState(false);
 
-  // Keep a valid duration when the service changes.
+  // Grow / shrink the per-person picks when the guest count changes.
   useEffect(() => {
-    if (!service.options.some((o) => o.minutes === minutes)) {
-      setMinutes(service.options[0].minutes);
-    }
-  }, [service, minutes]);
+    setGuests((prev) => {
+      if (people === prev.length) return prev;
+      const next = prev.slice(0, people);
+      while (next.length < people) {
+        const d = services[0];
+        next.push({ serviceId: d.id, minutes: d.options[0].minutes });
+      }
+      return next;
+    });
+  }, [people]);
 
-  // Fetch which slots are already taken for the chosen date.
+  const setGuestService = (i: number, serviceId: string) =>
+    setGuests((prev) =>
+      prev.map((g, idx) => {
+        if (idx !== i) return g;
+        const s = services.find((x) => x.id === serviceId) ?? services[0];
+        return { serviceId, minutes: s.options[0].minutes };
+      })
+    );
+
+  const setGuestMinutes = (i: number, minutes: number) =>
+    setGuests((prev) =>
+      prev.map((g, idx) => (idx === i ? { ...g, minutes } : g))
+    );
+
+  // Resolve each pick to its service + priced option.
+  const resolved = useMemo(
+    () =>
+      guests.map((g) => {
+        const s = services.find((x) => x.id === g.serviceId) ?? services[0];
+        const opt =
+          s.options.find((o) => o.minutes === g.minutes) ?? s.options[0];
+        return { service: s, minutes: opt.minutes, price: opt.price };
+      }),
+    [guests]
+  );
+
+  const anyStudioOnly = resolved.some((r) => r.service.studioOnly);
+
+  // Studio-only treatments (need a proper massage bed) can't be done in-villa.
+  useEffect(() => {
+    if (anyStudioOnly && mode === "home") setMode("spa");
+  }, [anyStudioOnly, mode]);
+
+  // Slot occupancy is driven by the longest treatment (they run in parallel).
+  const maxMinutes = Math.max(...resolved.map((r) => r.minutes));
+
+  // Fetch how many therapists are already busy per slot for the chosen date.
   useEffect(() => {
     if (!bookingEnabled || !date) {
-      setTakenSlots([]);
+      setSlotLoad({});
       return;
     }
     let active = true;
     setLoadingSlots(true);
-    getTakenSlots(date).then((slots) => {
+    getSlotLoad(date).then((load) => {
       if (active) {
-        setTakenSlots(slots);
+        setSlotLoad(load);
         setLoadingSlots(false);
       }
     });
@@ -98,10 +133,18 @@ export default function BookingModal({
     };
   }, [date]);
 
-  const availableTimes = useMemo(
-    () => (bookingEnabled ? availableStartTimes(takenSlots, minutes) : HOUR_SLOTS),
-    [takenSlots, minutes]
-  );
+  const availableTimes = useMemo(() => {
+    const base = bookingEnabled
+      ? availableStartTimes(slotLoad, maxMinutes, people)
+      : HOUR_SLOTS.filter((s) => {
+          const endHour = Number(s.slice(0, 2)) + Math.ceil(maxMinutes / 60);
+          return endHour <= 21;
+        });
+    // In-villa can't start after the cutoff (staff travel + finish time).
+    return mode === "home"
+      ? base.filter((t) => t <= IN_HOME_LAST_START)
+      : base;
+  }, [slotLoad, maxMinutes, people, mode]);
 
   // Drop a chosen time if it becomes unavailable (duration/date change).
   useEffect(() => {
@@ -115,62 +158,93 @@ export default function BookingModal({
     };
   }, []);
 
-  const price =
-    service.options.find((o) => o.minutes === minutes)?.price ??
-    service.options[0].price;
+  const guestChoices: GuestChoice[] = resolved.map((r) => ({
+    serviceName: r.service.name,
+    minutes: r.minutes,
+    price: r.price,
+  }));
 
-  const dist = coords ? distanceKm(business.location, coords) : undefined;
-  const zone = dist !== undefined ? zoneInfo(dist) : undefined;
+  const zone = mode === "home" ? travelZoneById(zoneId) : undefined;
 
   const state: BookingState = {
-    serviceName: service.name,
-    minutes,
-    price,
+    guests: guestChoices,
     mode,
-    people,
     date,
     time,
     name,
     notes,
-    distanceKm: dist,
     travelFee: zone?.fee,
     zoneLabel: zone?.label,
-    coords: coords ?? undefined,
   };
 
   const total = bookingTotal(state);
-  const canBook = mode === "spa" || coords !== null;
 
-  const useMyLocation = () => {
-    if (!navigator.geolocation) return;
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocating(false);
-      },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  };
+  // Everything that must be filled in before a booking can be sent.
+  const missing: string[] = [];
+  if (!name.trim()) missing.push("your name");
+  if (!date) missing.push("a date");
+  if (!time) missing.push("a time");
+  if (mode === "home" && !zone) missing.push("your area");
+  const canBook = missing.length === 0;
 
   const today = new Date().toISOString().split("T")[0];
 
   const [recorded, setRecorded] = useState(false);
   const recordBooking = () => {
-    if (!bookingEnabled || recorded || !date || !time) return;
+    if (!bookingEnabled || recorded || !canBook) return;
     setRecorded(true);
     createBooking({
-      serviceName: service.name,
-      minutes,
+      serviceName: guestChoices.map((g) => g.serviceName).join(" + "),
+      minutes: maxMinutes,
       mode,
-      people,
+      people: guestChoices.length,
       date,
       time,
       name,
       notes,
     });
   };
+
+  const durationButtons = (i: number) => {
+    const r = resolved[i];
+    return (
+      <div className="flex flex-wrap gap-2">
+        {r.service.options.map((o) => (
+          <button
+            key={o.minutes}
+            onClick={() => setGuestMinutes(i, o.minutes)}
+            className={`rounded-full border px-5 py-2.5 text-sm transition ${
+              r.minutes === o.minutes
+                ? "border-luxe-700 bg-luxe-700 text-cream"
+                : "border-black/10 bg-white text-ink hover:border-luxe-700/50"
+            }`}
+          >
+            {o.minutes} min ·{" "}
+            {money(mode === "home" ? o.price + IN_HOME_SURCHARGE : o.price)}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const serviceSelect = (i: number) => (
+    <select
+      value={guests[i].serviceId}
+      onChange={(e) => setGuestService(i, e.target.value)}
+      className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
+    >
+      {services.map((s) => (
+        <option key={s.id} value={s.id}>
+          {s.name} — from{" "}
+          {money(
+            mode === "home" && !s.studioOnly
+              ? fromPrice(s) + IN_HOME_SURCHARGE
+              : fromPrice(s)
+          )}
+        </option>
+      ))}
+    </select>
+  );
 
   return (
     <AnimatePresence>
@@ -208,51 +282,81 @@ export default function BookingModal({
 
           {/* Body */}
           <div className="flex-1 space-y-7 overflow-y-auto px-6 py-6">
-            {/* Service */}
+            {/* People */}
             <div>
               <label className="mb-2 block text-sm font-medium text-ink">
-                1 · Choose a treatment
+                1 · How many people?
               </label>
-              <select
-                value={serviceId}
-                onChange={(e) => setServiceId(e.target.value)}
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
-              >
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} — from {money(fromPrice(s))}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-2 text-sm text-ink-soft">{service.short}</p>
+              <div className="flex gap-2">
+                {Array.from({ length: MAX_PEOPLE }, (_, idx) => idx + 1).map(
+                  (n) => (
+                    <button
+                      key={n}
+                      onClick={() => setPeople(n)}
+                      className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-medium transition ${
+                        people === n
+                          ? "border-luxe-700 bg-luxe-700 text-cream"
+                          : "border-black/10 bg-white text-ink hover:border-luxe-700/50"
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  )
+                )}
+              </div>
+              {people > 1 && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
+                  <Users className="h-3.5 w-3.5" />
+                  Choose a treatment for each person below.
+                </p>
+              )}
             </div>
 
-            {/* Duration */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-ink">
-                2 · Duration
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {service.options.map((o) => (
-                  <button
-                    key={o.minutes}
-                    onClick={() => setMinutes(o.minutes)}
-                    className={`rounded-full border px-5 py-2.5 text-sm transition ${
-                      minutes === o.minutes
-                        ? "border-luxe-700 bg-luxe-700 text-cream"
-                        : "border-black/10 bg-white text-ink hover:border-luxe-700/50"
-                    }`}
-                  >
-                    {o.minutes} min · {money(o.price)}
-                  </button>
-                ))}
+            {/* Treatment(s) */}
+            {people === 1 ? (
+              <>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-ink">
+                    2 · Choose a treatment
+                  </label>
+                  {serviceSelect(0)}
+                  <p className="mt-2 text-sm text-ink-soft">
+                    {resolved[0].service.short}
+                  </p>
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-ink">
+                    3 · Duration
+                  </label>
+                  {durationButtons(0)}
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-ink">
+                  2 · Treatments
+                </label>
+                <div className="space-y-4">
+                  {guests.map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl border border-black/10 bg-white/60 p-4"
+                    >
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-luxe-700">
+                        Person {i + 1}
+                      </p>
+                      {serviceSelect(i)}
+                      <div className="mt-3">{durationButtons(i)}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Location mode */}
             <div>
               <label className="mb-2 block text-sm font-medium text-ink">
-                3 · Where?
+                {people === 1 ? "4" : "3"} · Where?
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -270,23 +374,39 @@ export default function BookingModal({
                   </div>
                 </button>
                 <button
-                  onClick={() => setMode("home")}
+                  onClick={() => !anyStudioOnly && setMode("home")}
+                  disabled={anyStudioOnly}
                   className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
-                    mode === "home"
+                    anyStudioOnly
+                      ? "cursor-not-allowed border-black/10 bg-black/5 opacity-60"
+                      : mode === "home"
                       ? "border-luxe-700 bg-luxe-50"
                       : "border-black/10 bg-white hover:border-luxe-700/40"
                   }`}
                 >
-                  <Home className="h-5 w-5 text-luxe-700" />
+                  {anyStudioOnly ? (
+                    <Lock className="h-5 w-5 text-ink-soft" />
+                  ) : (
+                    <Home className="h-5 w-5 text-luxe-700" />
+                  )}
                   <div>
-                    <p className="text-sm font-medium text-ink">In-home</p>
-                    <p className="text-xs text-ink-soft">We come to you</p>
+                    <p className="text-sm font-medium text-ink">In-villa</p>
+                    <p className="text-xs text-ink-soft">
+                      {anyStudioOnly ? "Studio only" : "We come to you"}
+                    </p>
                   </div>
                 </button>
               </div>
+              {anyStudioOnly && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
+                  <Lock className="h-3.5 w-3.5" />
+                  A selected treatment is studio only — it needs a proper massage
+                  bed.
+                </p>
+              )}
             </div>
 
-            {/* In-home map + travel fee */}
+            {/* In-villa zone + travel fee */}
             <AnimatePresence>
               {mode === "home" && (
                 <motion.div
@@ -295,64 +415,32 @@ export default function BookingModal({
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-ink">
-                      Drop a pin at your location
-                    </p>
-                    <button
-                      onClick={useMyLocation}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-luxe-700/10 px-3 py-1.5 text-xs font-medium text-luxe-800 hover:bg-luxe-700/20"
-                    >
-                      {locating ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Crosshair className="h-3.5 w-3.5" />
-                      )}
-                      Use my location
-                    </button>
-                  </div>
-                  <div className="mt-2 h-60 w-full overflow-hidden rounded-2xl ring-1 ring-black/10">
-                    <MapPicker coords={coords} onPick={(lat, lng) => setCoords({ lat, lng })} />
-                  </div>
-                  <p className="mt-1.5 text-xs text-ink-soft">
-                    Tap the map (or drag the pin) to set where you&apos;d like the
-                    treatment.
-                  </p>
-
-                  {zone && dist !== undefined && (
+                  <label className="mb-2 block text-sm font-medium text-ink">
+                    Your area
+                  </label>
+                  <select
+                    value={zoneId}
+                    onChange={(e) => setZoneId(e.target.value)}
+                    className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
+                  >
+                    <option value="">Select your area…</option>
+                    {travelZones.map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.label} — +{money(z.fee)} travel
+                      </option>
+                    ))}
+                  </select>
+                  {zone && (
                     <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 ring-1 ring-black/5">
                       <div className="flex items-center gap-2 text-sm text-ink">
-                        <MapPin className="h-4 w-4 text-luxe-700" />
-                        <span>
-                          {zone.label} · {dist.toFixed(1)} km away
-                        </span>
+                        <Car className="h-4 w-4 text-luxe-700" />
+                        <span>{zone.label}</span>
                       </div>
                       <span className="text-sm font-semibold text-luxe-800">
-                        {zone.fee === 0 ? "Free travel" : `+ ${money(zone.fee)}`}
+                        + {money(zone.fee)}
                       </span>
                     </div>
                   )}
-
-                  <div className="mt-3">
-                    <label className="mb-1 block text-xs font-medium text-ink-soft">
-                      Guests
-                    </label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3].map((n) => (
-                        <button
-                          key={n}
-                          onClick={() => setPeople(n)}
-                          className={`h-9 w-9 rounded-full border text-sm transition ${
-                            people === n
-                              ? "border-luxe-700 bg-luxe-700 text-cream"
-                              : "border-black/10 bg-white text-ink"
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -361,7 +449,7 @@ export default function BookingModal({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-ink">
-                  4 · Date
+                  {people === 1 ? "5" : "4"} · Date
                 </label>
                 <input
                   type="date"
@@ -406,13 +494,18 @@ export default function BookingModal({
 
             {/* Name / notes */}
             <div className="grid grid-cols-1 gap-4">
-              <input
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
-              />
+              <div>
+                <label className="mb-2 block text-sm font-medium text-ink">
+                  {people === 1 ? "6" : "5"} · Your name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-ink focus:border-luxe-700 focus:outline-none"
+                />
+              </div>
               <textarea
                 placeholder="Anything we should know? (injuries, preferences, pressure…)"
                 value={notes}
@@ -427,8 +520,10 @@ export default function BookingModal({
           <div className="border-t border-black/5 bg-white/70 px-6 py-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm text-ink-soft">
-                {service.name} · {minutes} min
-                {mode === "home" && zone && zone.fee > 0 && (
+                {people === 1 ? guestChoices[0].serviceName : `${people} people`}{" "}
+                · {maxMinutes} min
+                {mode === "home" && <span> · in-villa</span>}
+                {mode === "home" && zone && (
                   <span> · +{money(zone.fee)} travel</span>
                 )}
               </div>
@@ -454,17 +549,20 @@ export default function BookingModal({
                 Book via WhatsApp
               </a>
               <a
-                href={emailLink(state)}
+                href={canBook ? emailLink(state) : undefined}
+                aria-disabled={!canBook}
                 onClick={recordBooking}
-                className="btn-outline sm:w-auto"
+                className={`btn-outline sm:w-auto ${
+                  !canBook ? "pointer-events-none opacity-50" : ""
+                }`}
               >
                 <Mail className="h-4 w-4" />
                 Email
               </a>
             </div>
-            {mode === "home" && !coords && (
+            {!canBook && (
               <p className="mt-2 text-center text-xs text-luxe-700">
-                Please set your location on the map to continue.
+                Please add {missing.join(", ")} to continue.
               </p>
             )}
             <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-ink-soft">

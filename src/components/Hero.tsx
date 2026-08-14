@@ -59,9 +59,9 @@ export default function Hero() {
         style={{ x: glowX, y: glowY }}
         className="pointer-events-none absolute inset-0"
       >
-        <div className="absolute -left-24 top-1/4 h-[32rem] w-[32rem] rounded-full bg-luxe-600/30 blur-[120px] opacity-50" />
-        <div className="absolute -right-16 top-1/3 h-[28rem] w-[28rem] rounded-full bg-gold/20 blur-[120px] opacity-40" />
-        <div className="absolute bottom-0 left-1/3 h-[24rem] w-[24rem] rounded-full bg-luxe-800/40 blur-[110px] opacity-45" />
+        <div className="glow-orb -left-24 top-1/4 h-[32rem] w-[32rem] bg-luxe-600/40 opacity-70" />
+        <div className="glow-orb -right-16 top-1/3 h-[28rem] w-[28rem] bg-gold/25 opacity-60" />
+        <div className="glow-orb bottom-0 left-1/3 h-[24rem] w-[24rem] bg-luxe-800/50 opacity-60" />
       </motion.div>
 
       {/* Floating gold particles */}
@@ -106,7 +106,7 @@ export default function Hero() {
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-cream/85">
             A medical &amp; wellness massage sanctuary led by Khun Roong —
             lymphatic drainage, Toksen, herbal compress and timeless Thai
-            rituals. In our studio, or in the comfort of your home.
+            rituals. In our studio, or in the comfort of your villa.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
