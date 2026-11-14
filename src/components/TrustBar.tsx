@@ -6,6 +6,9 @@ const items = [
   "Traditional Thai",
   "Herbal Hot Compress",
   "Hot Stone",
+  "Anti-Cellulite",
+  "Post-Surgery Breast Care",
+  "Stomach Massage",
   "Facial Care",
   "In-Home Service",
 ];

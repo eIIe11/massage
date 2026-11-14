@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Treatment menu & packages — from Luxe Health Massage's own printed menu.
 // Prices are in Thai Baht (฿). Everything is editable in this file.
-// Durations: 60 = 1 hr, 90 = 1.30 hr, 120 = 2 hr, 180 = 3 hr.
+// Durations: 30 = 30 min, 45 = 45 min, 60 = 1 hr, 90 = 1.30 hr, 120 = 2 hr, 180 = 3 hr.
 // ---------------------------------------------------------------------------
 
 export type Category = "wellness" | "classic" | "body" | "beauty";
@@ -38,7 +38,8 @@ export const categories: { id: Category; label: string; blurb: string }[] = [
   {
     id: "body",
     label: "Foot, Back & Body",
-    blurb: "Focused foot, back and skin treatments to target what needs care.",
+    blurb:
+      "Targeted body, foot, back and skin treatments for exactly what needs care.",
   },
   {
     id: "beauty",
@@ -260,6 +261,45 @@ export const services: Service[] = [
   },
 
   // ---- Foot, Back & Body ----
+  {
+    id: "breast-after-surgery",
+    name: "Breast Massage After Surgery",
+    category: "body",
+    short: "Post-op care to keep implants soft and natural.",
+    description:
+      "Helps prevent the formation of a fibrous capsule around the silicone implant, allows the implant to move more naturally, and reduces muscle tightness.",
+    benefits: ["Helps prevent capsule", "Natural movement", "Eases tightness"],
+    options: [
+      { minutes: 30, price: 500 },
+      { minutes: 45, price: 600 },
+    ],
+  },
+  {
+    id: "anti-cellulite",
+    name: "Anti-Cellulite Massage",
+    category: "body",
+    short: "Firms and smooths specific areas of the body.",
+    description:
+      "Reduces cellulite, firms specific areas of the body, and stimulates the production of collagen and elastin.",
+    benefits: ["Reduces cellulite", "Firms the body", "Boosts collagen"],
+    options: [
+      { minutes: 30, price: 500 },
+      { minutes: 60, price: 700 },
+    ],
+  },
+  {
+    id: "stomach",
+    name: "Stomach Massage",
+    category: "body",
+    short: "Abdominal massage for easier digestion.",
+    description:
+      "Abdominal massage helps stimulate bowel function, reduce gas in the digestive tract, and alleviate constipation.",
+    benefits: ["Aids digestion", "Reduces bloating", "Eases constipation"],
+    options: [
+      { minutes: 30, price: 500 },
+      { minutes: 60, price: 800 },
+    ],
+  },
   {
     id: "foot-oil-balm",
     name: "Foot Massage (Oil & Balm)",

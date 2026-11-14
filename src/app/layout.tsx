@@ -19,7 +19,7 @@ const jost = Jost({
 
 const siteUrl = "https://luxehealthmassage.com";
 const description =
-  "Luxe Health Massage — Koh Samui's premier medical & wellness massage studio in Bang Por. Lymphatic drainage, Toksen, Thai body balance, herbal hot compress, hot stone, traditional Thai & facials. In-spa or in-home. Book via WhatsApp.";
+  "Luxe Health Massage — Koh Samui's premier medical & wellness massage studio in Bang Por. Lymphatic drainage, Toksen, Thai body balance, herbal hot compress, hot stone, anti-cellulite, stomach & post-surgery breast massage, traditional Thai & facials. In-spa or in-home. Book via WhatsApp.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -36,6 +36,9 @@ export const metadata: Metadata = {
     "Mae Nam spa",
     "in-home massage Koh Samui",
     "herbal compress massage",
+    "anti-cellulite massage Koh Samui",
+    "breast massage after surgery Koh Samui",
+    "stomach massage Koh Samui",
     "wellness spa Koh Samui",
   ],
   openGraph: {
