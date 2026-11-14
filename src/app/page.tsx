@@ -6,7 +6,6 @@ import Intro from "@/components/Intro";
 import Signature from "@/components/Signature";
 import Services from "@/components/Services";
 import Packages from "@/components/Packages";
-import InHome from "@/components/InHome";
 import About from "@/components/About";
 import Testimonials from "@/components/Testimonials";
 import Gallery from "@/components/Gallery";
@@ -25,7 +24,6 @@ export default function Home() {
         <Signature />
         <Services />
         <Packages />
-        <InHome />
         <About />
         <Testimonials />
         <Gallery />

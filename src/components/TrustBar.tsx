@@ -10,7 +10,6 @@ const items = [
   "Post-Surgery Breast Care",
   "Stomach Massage",
   "Facial Care",
-  "In-Home Service",
 ];
 
 export default function TrustBar() {

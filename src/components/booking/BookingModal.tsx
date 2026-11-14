@@ -1,28 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   X,
-  MapPin,
-  Home,
-  Building2,
-  Crosshair,
   MessageCircle,
   Mail,
   Check,
-  Loader2,
 } from "lucide-react";
 import { services, fromPrice } from "@/lib/services";
-import { business, distanceKm } from "@/lib/config";
 import {
   BookingState,
   bookingTotal,
   buildMessage,
   emailLink,
   money,
-  zoneInfo,
 } from "@/lib/booking";
 import { whatsappLink } from "@/lib/config";
 import {
@@ -32,15 +24,6 @@ import {
   createBooking,
   HOUR_SLOTS,
 } from "@/lib/supabase";
-
-const MapPicker = dynamic(() => import("./MapPicker"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center bg-cream-soft">
-      <Loader2 className="h-6 w-6 animate-spin text-luxe-700" />
-    </div>
-  ),
-});
 
 export default function BookingModal({
   initialServiceId,
@@ -59,12 +42,6 @@ export default function BookingModal({
   );
 
   const [minutes, setMinutes] = useState(initial.options[0].minutes);
-  const [mode, setMode] = useState<"spa" | "home">("spa");
-  const [people, setPeople] = useState(1);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null
-  );
-  const [locating, setLocating] = useState(false);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [name, setName] = useState("");
@@ -119,40 +96,17 @@ export default function BookingModal({
     service.options.find((o) => o.minutes === minutes)?.price ??
     service.options[0].price;
 
-  const dist = coords ? distanceKm(business.location, coords) : undefined;
-  const zone = dist !== undefined ? zoneInfo(dist) : undefined;
-
   const state: BookingState = {
     serviceName: service.name,
     minutes,
     price,
-    mode,
-    people,
     date,
     time,
     name,
     notes,
-    distanceKm: dist,
-    travelFee: zone?.fee,
-    zoneLabel: zone?.label,
-    coords: coords ?? undefined,
   };
 
   const total = bookingTotal(state);
-  const canBook = mode === "spa" || coords !== null;
-
-  const useMyLocation = () => {
-    if (!navigator.geolocation) return;
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocating(false);
-      },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  };
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -163,8 +117,8 @@ export default function BookingModal({
     createBooking({
       serviceName: service.name,
       minutes,
-      mode,
-      people,
+      mode: "spa",
+      people: 1,
       date,
       time,
       name,
@@ -249,119 +203,11 @@ export default function BookingModal({
               </div>
             </div>
 
-            {/* Location mode */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-ink">
-                3 · Where?
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setMode("spa")}
-                  className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
-                    mode === "spa"
-                      ? "border-luxe-700 bg-luxe-50"
-                      : "border-black/10 bg-white hover:border-luxe-700/40"
-                  }`}
-                >
-                  <Building2 className="h-5 w-5 text-luxe-700" />
-                  <div>
-                    <p className="text-sm font-medium text-ink">At the studio</p>
-                    <p className="text-xs text-ink-soft">Bang Por, Koh Samui</p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setMode("home")}
-                  className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
-                    mode === "home"
-                      ? "border-luxe-700 bg-luxe-50"
-                      : "border-black/10 bg-white hover:border-luxe-700/40"
-                  }`}
-                >
-                  <Home className="h-5 w-5 text-luxe-700" />
-                  <div>
-                    <p className="text-sm font-medium text-ink">In-home</p>
-                    <p className="text-xs text-ink-soft">We come to you</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* In-home map + travel fee */}
-            <AnimatePresence>
-              {mode === "home" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-ink">
-                      Drop a pin at your location
-                    </p>
-                    <button
-                      onClick={useMyLocation}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-luxe-700/10 px-3 py-1.5 text-xs font-medium text-luxe-800 hover:bg-luxe-700/20"
-                    >
-                      {locating ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Crosshair className="h-3.5 w-3.5" />
-                      )}
-                      Use my location
-                    </button>
-                  </div>
-                  <div className="mt-2 h-60 w-full overflow-hidden rounded-2xl ring-1 ring-black/10">
-                    <MapPicker coords={coords} onPick={(lat, lng) => setCoords({ lat, lng })} />
-                  </div>
-                  <p className="mt-1.5 text-xs text-ink-soft">
-                    Tap the map (or drag the pin) to set where you&apos;d like the
-                    treatment.
-                  </p>
-
-                  {zone && dist !== undefined && (
-                    <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 ring-1 ring-black/5">
-                      <div className="flex items-center gap-2 text-sm text-ink">
-                        <MapPin className="h-4 w-4 text-luxe-700" />
-                        <span>
-                          {zone.label} · {dist.toFixed(1)} km away
-                        </span>
-                      </div>
-                      <span className="text-sm font-semibold text-luxe-800">
-                        {zone.fee === 0 ? "Free travel" : `+ ${money(zone.fee)}`}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="mt-3">
-                    <label className="mb-1 block text-xs font-medium text-ink-soft">
-                      Guests
-                    </label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3].map((n) => (
-                        <button
-                          key={n}
-                          onClick={() => setPeople(n)}
-                          className={`h-9 w-9 rounded-full border text-sm transition ${
-                            people === n
-                              ? "border-luxe-700 bg-luxe-700 text-cream"
-                              : "border-black/10 bg-white text-ink"
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* Date / time */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-ink">
-                  4 · Date
+                  3 · Date
                 </label>
                 <input
                   type="date"
@@ -428,9 +274,6 @@ export default function BookingModal({
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm text-ink-soft">
                 {service.name} · {minutes} min
-                {mode === "home" && zone && zone.fee > 0 && (
-                  <span> · +{money(zone.fee)} travel</span>
-                )}
               </div>
               <div className="text-right">
                 <p className="text-xs text-ink-soft">Estimated total</p>
@@ -441,14 +284,11 @@ export default function BookingModal({
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <a
-                href={canBook ? whatsappLink(buildMessage(state)) : undefined}
+                href={whatsappLink(buildMessage(state))}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-disabled={!canBook}
                 onClick={recordBooking}
-                className={`btn-primary flex-1 ${
-                  !canBook ? "pointer-events-none opacity-50" : ""
-                }`}
+                className="btn-primary flex-1"
               >
                 <MessageCircle className="h-4 w-4" />
                 Book via WhatsApp
@@ -462,11 +302,6 @@ export default function BookingModal({
                 Email
               </a>
             </div>
-            {mode === "home" && !coords && (
-              <p className="mt-2 text-center text-xs text-luxe-700">
-                Please set your location on the map to continue.
-              </p>
-            )}
             <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-ink-soft">
               <Check className="h-3.5 w-3.5 text-luxe-700" />
               No prepayment — we confirm your booking on WhatsApp.
