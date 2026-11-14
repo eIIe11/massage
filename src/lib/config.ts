@@ -1,7 +1,6 @@
 // ---------------------------------------------------------------------------
-// Business configuration — safe to edit. All contact details, coordinates and
-// in-home travel-fee zones live here so they can be updated without touching
-// the components.
+// Business configuration — safe to edit. All contact details and coordinates
+// live here so they can be updated without touching the components.
 // ---------------------------------------------------------------------------
 
 export const business = {
@@ -37,38 +36,3 @@ export const whatsappLink = (message: string) =>
 export const mapsLink =
   "https://www.google.com/maps/search/?api=1&query=" +
   `${business.location.lat},${business.location.lng}`;
-
-// In-home (outcall) travel-fee tiers, by straight-line distance from the shop.
-// Prices are indicative — confirm with the owner. Editable here.
-export interface TravelZone {
-  maxKm: number;
-  fee: number;
-  label: string;
-}
-
-export const travelZones: TravelZone[] = [
-  { maxKm: 4, fee: 0, label: "Bang Por & Mae Nam" },
-  { maxKm: 8, fee: 150, label: "Bophut & Fisherman's Village" },
-  { maxKm: 14, fee: 300, label: "Chaweng, Choeng Mon & Nathon" },
-  { maxKm: 22, fee: 500, label: "Lamai & the south" },
-  { maxKm: Infinity, fee: 700, label: "Far side of the island" },
-];
-
-export const zoneForDistance = (km: number): TravelZone =>
-  travelZones.find((z) => km <= z.maxKm) ?? travelZones[travelZones.length - 1];
-
-// Haversine distance in kilometres.
-export const distanceKm = (
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number }
-): number => {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-};

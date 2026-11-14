@@ -49,8 +49,7 @@ export default function Visit() {
           </h2>
           <p className="mt-5 max-w-md text-cream/75">
             Nestled in Bang Por on Koh Samui&apos;s tranquil north coast. Walk-ins
-            welcome, though booking ahead is recommended — especially for in-home
-            visits.
+            welcome, though booking ahead is recommended.
           </p>
 
           <div className="mt-9 grid gap-x-8 gap-y-6 sm:grid-cols-2">

@@ -149,9 +149,3 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #8b2530;
 }
-
-/* Leaflet map tweaks */
-.leaflet-container {
-  font-family: var(--font-jost), sans-serif;
-  border-radius: 1.5rem;
-}

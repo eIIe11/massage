@@ -9,7 +9,6 @@ import LanguageSwitcher from "./LanguageSwitcher";
 const links = [
   { href: "#treatments", label: "Treatments" },
   { href: "#packages", label: "Packages" },
-  { href: "#in-home", label: "In-Home" },
   { href: "#about", label: "About" },
   { href: "#visit", label: "Visit" },
 ];

@@ -16,7 +16,7 @@ const reviews = [
   {
     name: "Lisa & Tom",
     from: "Germany",
-    text: "They came to our villa for a couples treatment — so easy to book on WhatsApp and worth every baht. Professional, punctual and wonderfully relaxing.",
+    text: "We booked a couples treatment on WhatsApp — so easy, and worth every baht. Professional, punctual and wonderfully relaxing.",
   },
 ];
 
